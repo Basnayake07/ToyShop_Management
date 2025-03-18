@@ -52,27 +52,29 @@ export default function EmployeeTable() {
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get("http://localhost:8081/api/auth/users"); // Adjust the URL if necessary
+      const formattedRows = response.data.map((user, index) => ({
+        id: index + 1, // Unique ID for DataGrid
+        adminID: user.adminID,
+        name: user.name,
+        address: user.address,
+        email: user.email,
+        role: user.role,
+        phoneNumbers: user.phoneNumbers || "N/A",
+      }));
+      setRows(formattedRows);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8081/api/auth/users") 
-      .then((response) => {
-        const formattedRows = response.data.map((user, index) => ({
-          id: index + 1, // Unique ID for DataGrid
-          adminID: user.adminID,
-          name: user.name,
-          address: user.address,
-          email: user.email,
-          role: user.role,
-          phoneNumbers: user.phoneNumbers || "N/A",
-        }));
-        setRows(formattedRows);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching users:", error);
-        setLoading(false);
-      });
+    // Fetch employee data from the backend
+    fetchEmployees();
   }, []);
 
   // Handle Delete Button Click
@@ -310,7 +312,7 @@ export default function EmployeeTable() {
               )}
             </form>
           ) : (
-            <EmployeeRegisterForm />
+            <EmployeeRegisterForm onEmployeeAdded={fetchEmployees} />
           )}
         </Box>
       </Modal>

@@ -2,9 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 import { TextField, Button, Container, Typography, Box, Alert } from "@mui/material";
 
-const EmployeeRegisterForm = () => {
+const EmployeeRegisterForm = ({ onEmployeeAdded}) => {
   const [formData, setFormData] = useState({
-    adminID: "",
+    //adminID: "",
     name: "",
     address: "",
     email: "",
@@ -44,6 +44,8 @@ const EmployeeRegisterForm = () => {
       });
       
       setMessage(response.data.message);
+      onEmployeeAdded(); // Reload the employee table
+
     } catch (error) {
       setMessage(error.response?.data?.message || "Server error");
     }
@@ -56,7 +58,7 @@ const EmployeeRegisterForm = () => {
           Register Employee
         </Typography>
         <form onSubmit={handleSubmit}>
-          <TextField fullWidth margin="normal" label="Admin ID" name="adminID" value={formData.adminID} onChange={handleChange} required />
+          {/* <TextField fullWidth margin="normal" label="Admin ID" name="adminID" value={formData.adminID} onChange={handleChange} required /> */}
           <TextField fullWidth margin="normal" label="Name" name="name" value={formData.name} onChange={handleChange} required />
           <TextField fullWidth margin="normal" label="Address" name="address" value={formData.address} onChange={handleChange} required />
           <TextField fullWidth margin="normal" label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />

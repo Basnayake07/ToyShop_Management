@@ -9,7 +9,7 @@ export const registerEmp = async (req, res) => {
     const { adminID, name, address, email, phoneNumbers, role, password } = req.body;
   
     // Check if all fields are provided
-    if (!adminID || !name || !address || !email || !phoneNumbers || !role || !password) {
+    if ( !name || !address || !email || !phoneNumbers || !role || !password) {
       return res.status(400).json({ message: 'All fields are required!' });
     }
   
@@ -27,11 +27,19 @@ export const registerEmp = async (req, res) => {
         return res.status(403).json({ message: 'Access denied. Only admins can register employees.' });
       }
   
+
+      // Find the next adminID
+      const getLastIDQuery = "SELECT MAX(CAST(SUBSTRING(adminID, 3) AS UNSIGNED)) AS lastID FROM admin";
+      const [result] = await pool.query(getLastIDQuery);
+      const lastID = result[0].lastID || 0; // If no ID exists, start from 0
+      const nextID = `EM${lastID + 1}`;
+
+
       // Hash the password 
       const hashedPassword = await bcrypt.hash(password, 10);
   
       const insertAdminQuery = 'INSERT INTO admin (adminID, name, address, email, role, password) VALUES (?, ?, ?, ?, ?, ?)';
-      await pool.query(insertAdminQuery, [adminID, name, address, email, role, hashedPassword]);
+      await pool.query(insertAdminQuery, [nextID, name, address, email, role, hashedPassword]);
   
       // If no phone numbers are provided, return success
       if (!phoneNumbers.length) {
