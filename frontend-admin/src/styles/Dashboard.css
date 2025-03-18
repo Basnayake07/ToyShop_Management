@@ -1,0 +1,20 @@
+.container{
+    display: flex;
+    margin-left: 220px;
+    align-items: center;
+    justify-content: center;
+    text-Align: "center";
+    padding: "20px";
+    font-Family: "Arial, sans-serif";
+    
+  }
+
+ 
+.logout{
+    
+    background-color: "red";
+    color: "white";
+    padding: "10px";
+    border: "none" ;
+    cursor: "pointer";
+  }

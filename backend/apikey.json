@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "plenary-matrix-450207-d2",
+  "private_key_id": "417bfd5a4834b570854e3fe5ee3b47afcfef7ee5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCzCuKVJlxNFE6n\nwM2Zu89NpjvIMKzWSBKETOIPrEMispRKSlbZYyEqoaSTt+hgEWDYgD2XdoIFgGsB\ndjBSVyFMJmLUpfyxp0cG9vtqtsrJiQzZ+9y+T+jTrVG71LgW6ucX53aCL7iCXtd8\nrINRCzDLx9LY8CRHN/gs8TUnorsCL5DsDq7oJsb60h1nt5dgyr15PZFhKTn3QIs3\nQYuxfFuZO7jJ2Eh4T9Sov177afVOrlXE3c2bw944qXzAgxO780oqvoxqIxUAISgv\n/I6BkgVs437DJTPgK5QwnBI0rfHvpYupOYVRT2Wd13nVNn5MXyKRVZRCJWfBu5sO\nbvS65mZtAgMBAAECggEASY9ZVIo0Nf736fhPALCnFXIM8cz91fQ6l1y3LFVMJ/9S\n6crtL9eIkuliosZWlNHPBmR56bbo6LXAQRN7+viNV6oVxOSFk7/0cKoc1dVQL8k9\nHHpcUVynfgChqhhVoiTU2X9hs09D8VxiEHkYYr3ESJVKzZKsdQ5Lyrs3aZd0Wgrc\n/i+GcWPJ69cacID4Ka+KynuniIiGEPoIMxpEOqpmlVLTUnpRtOPh/G5fKLuaAsD4\nwOR/OwWBeqpk45jSyNoY+JOve/rxZ0TRmbnGayB0sQYpzxEi3AizALBdk7klF7vG\nRw0T9cszvzNJBYCd3/vtl7PWXbEZZ3vSn9ez3DeSiQKBgQDaHLfmp7g4tjvVT/LO\nFWAZPTdKm7CWV91zUc/rCJpMEYMmvSp2dGBNmO9ruoDistUBpaBqqqBuF+D72h8v\nWc9C/f+ASjX1F7dtDpT6lwm0mqiiOs96MLKJmxuZhu7BJ8M2ZFq4ONWJOBlmibZo\nrFK1mxs5U2wsGAqOgjnFwobpXwKBgQDSJMTRByf/UOsHdt5krfl6cGglm3dlwJYj\nPMtxMG+AgFlHoZIJn3ufUnAPoe/pOoU6xrZ0TqqmQynnKcNrlWp/5SX01Zx80EMC\nDTKP+LC+VYB8m9q3rX/bn2Btr+helGvLAKZ85pailnfje8h2N1C7WHI9aBU3s8IH\nSKADVNRnswKBgC4M9DMJ5FZs+3MNPzmNv810ZFEnUABeKs5nTpvUJCe9ZtBuDiIW\nbiLUEHDRXtb+ZQTFAHqk7dxwxDrIkd8Aekcts51VjdDiogKvmnrSGuV75fDis92b\nnIZ7LjebCpvTll7Mj27n6QXgx1Qj7VRqVcgsKHJRD7y7krcF/caoTK3HAoGBANCH\nDgtCZ61SlbcVfMA5Z2vZaW+QI14ESrfy1wqd/rdsJawQJ4OHD7xcqLjKf/BXUuet\nUlZ9zZco5MbvyWzTmxgIwq5+3kd4vlWl1PvK01A8NkDww4wrDcpZD+4odZSNAZ4z\nKgKdKvNyDsvdBGJSp7kQnmRTCWL57NsfdTF5F0FDAoGBAJJi1bDBFezJKvPqKkBR\n1FvZkvCGpGzX6Wefm5Qnf5cftKWUw6f+XXxfWw9/CnrEZeiQNIAdpmriielgVWVl\nUkwNGocblWNOBoBCnlsJszWpMXxs0UdP8pe6sIuHtKgdVhk4fsDU7rHoCOhad+jy\nnNbzwgtjoeuIVMAFGhHSd1UP\n-----END PRIVATE KEY-----\n",
+  "client_email": "toyshop@plenary-matrix-450207-d2.iam.gserviceaccount.com",
+  "client_id": "109396289692833837752",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/toyshop%40plenary-matrix-450207-d2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
