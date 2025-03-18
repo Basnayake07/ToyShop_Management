@@ -87,18 +87,18 @@ const Product = () => {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState("");
   const [open, setOpen] = useState(false); // State to manage modal open/close
 
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get("http://localhost:8081/api/products"); // Adjust the URL if necessary
+      setProducts(response.data);
+      setFilteredProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
   useEffect(() => {
     // Fetch product data from the backend
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get("http://localhost:8081/api/products"); // Adjust the URL if necessary
-        setProducts(response.data);
-        setFilteredProducts(response.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -120,6 +120,10 @@ const Product = () => {
 
   const handleOpen = () => setOpen(true); // Function to open the modal
   const handleClose = () => setOpen(false); // Function to close the modal
+
+  const handleProductAdded = () => {
+    fetchProducts(); // Fetch the latest products after a new product is added
+  };
 
   return (
     <div style={{ display: "flex", backgroundColor: "#f0f0f0" }}>
@@ -169,7 +173,7 @@ const Product = () => {
       {/* Modal for Add Product Form */}
       <Modal open={open} onClose={handleClose}>
         <Box sx={{ ...modalStyle }}>
-          <AddProductForm onClose={handleClose} /> {/* Render AddProductForm inside the modal */}
+          <AddProductForm onClose={handleClose} onProductAdded={handleProductAdded} /> {/* Render AddProductForm inside the modal */}
         </Box>
       </Modal>
     </div>

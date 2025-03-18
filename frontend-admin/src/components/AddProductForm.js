@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { TextField, Button, MenuItem, Typography, Paper } from "@mui/material";
 import axios from "axios";
 
-const AddProductForm = ({ onClose }) => {
+const AddProductForm = ({ onClose, onProductAdded }) => {
     const [product, setProduct] = useState({
-        productID: "",
         name: "",
         category: "",
         description: "",
@@ -34,7 +33,6 @@ const AddProductForm = ({ onClose }) => {
         e.preventDefault();
 
         const formData = new FormData();
-        formData.append("productID", product.productID);
         formData.append("name", product.name);
         formData.append("category", product.category);
         formData.append("description", product.description);
@@ -48,6 +46,7 @@ const AddProductForm = ({ onClose }) => {
             alert("Product added successfully!");
             console.log(response.data);
             onClose(); // Close the modal after successful submission
+            onProductAdded(); // Call the callback function to reload the product table
         } catch (error) {
             console.error("Error adding product:", error);
             alert("Failed to add product.");
@@ -60,15 +59,6 @@ const AddProductForm = ({ onClose }) => {
                 Add New Product
             </Typography>
             <form onSubmit={handleSubmit} encType="multipart/form-data">
-                <TextField
-                    label="Product ID"
-                    name="productID"
-                    value={product.productID}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                    margin="normal"
-                />
                 <TextField
                     label="Name"
                     name="name"

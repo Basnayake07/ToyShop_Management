@@ -11,7 +11,7 @@ export const productController = {
             return res.status(500).json({ message: "Database connection not found" });
         }
 
-        const { productID, name, category, description, ageGrp } = req.body;
+        const { name, category, description, ageGrp } = req.body;
         const file = req.file; // Get the uploaded file from Multer
 
         if (!file) {
@@ -19,16 +19,22 @@ export const productController = {
         }
 
         try {
+            // Find the next productID
+            const getLastIDQuery = "SELECT MAX(CAST(SUBSTRING(productID, 3) AS UNSIGNED)) AS lastID FROM product";
+            const [result] = await req.db.execute(getLastIDQuery);
+            const lastID = result[0].lastID || 0; // If no ID exists, start from 0
+            const nextID = `PR${lastID + 1}`;
+
             // Upload the image to Cloudinary
             const imageUrl = await uploadToyImage(file.path);
 
             // Save the product information to the database
-            const [result] = await req.db.execute(
+            const [insertResult] = await req.db.execute(
                 "INSERT INTO product (productID, name, category, description, image, ageGrp) VALUES (?, ?, ?, ?, ?, ?)",
-                [productID, name, category, description, imageUrl, ageGrp]
+                [nextID, name, category, description, imageUrl, ageGrp]
             );
 
-            res.status(201).json({ message: "Product created successfully", result });
+            res.status(201).json({ message: "Product created successfully", result: insertResult });
         } catch (error) {
             console.error("Error creating product:", error);
             res.status(500).json({ message: "Error creating product", error });
