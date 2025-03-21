@@ -3,7 +3,7 @@ import mysql from 'mysql2';
 import cors from 'cors';
 import productRoutes from './routes/productRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import inventoryRoutes from './routes/inventoryRouter.js';
+import inventoryRoutes from './routes/inventoryRoutes.js';
 import db from './config/db.js';
 import dotenv from 'dotenv';
 dotenv.config();

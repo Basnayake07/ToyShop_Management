@@ -16,25 +16,44 @@ import {
   Button,
   Select,
   MenuItem,
+  Modal,
 } from '@mui/material';
+import AddBatchForm from '@/components/AddBatchForm';
+import axios from 'axios';
 
 const headCells = [
-  { id: 'productId', label: 'Product ID' },
-  { id: 'category', label: 'Category' },
+  { id: 'productID', label: 'Product ID' },
+  {id: 'category', label: 'Category'},
   { id: 'receivedDate', label: 'Received Date' },
-  { id: 'stockQuantity', label: 'Stock Quantity' },
+  { id: 'quantity', label: 'Quantity' },
   { id: 'cost', label: 'Cost' },
-  { id: 'sellingPrice', label: 'Selling Price' },
+  { id: 'wholesalePrice', label: 'Wholesale Price' },
+  { id: 'retailPrice', label: 'Retail Price' },
+  { id: 'minStock', label: 'Min Stock' },
   { id: 'minProfitMargin', label: 'Min Profit Margin' },
 ];
 
 const predefinedCategories = [
-    "Birthday Deco",
-    "Soft Toys",
-    "Educational Toys",
-    "Christmas Deco",
-    "Other Toys"
-  ];
+  "Birthday Deco",
+  "Soft Toys",
+  "Educational Toys",
+  "Christmas Deco",
+  "Other Toys"
+];
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  maxHeight: '80vh', // Set maximum height
+  overflowY: 'auto',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete }) {
   const [page, setPage] = React.useState(0);
@@ -42,6 +61,8 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
   const [search, setSearch] = React.useState('');
   const [selectedRow, setSelectedRow] = React.useState(null);
   const [category, setCategory] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+  const [inventory, setInventory] = React.useState([]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -52,10 +73,49 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
     setPage(0);
   };
 
-  const filteredRows = rows.filter(row =>
-    row.productId.toLowerCase().includes(search.toLowerCase()) &&
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const fetchInventory = async () => {
+    try {
+      const response = await axios.get("http://localhost:8081/api/inventory/inventory");
+      const inventoryData = response.data;
+
+      // Fetch product details
+      const productResponse = await axios.get("http://localhost:8081/api/products");
+      const productData = productResponse.data;
+
+      // Map category to inventory items
+      const inventoryWithCategory = inventoryData.map(item => {
+        const product = productData.find(p => p.productID === item.productID);
+        return { ...item, category: product ? product.category : 'Unknown' };
+      });
+      
+      // Adjust the URL if necessary
+      setInventory(inventoryWithCategory);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
+    }
+  };
+
+  const handleBatchAdded = () => {
+    fetchInventory(); // Fetch the latest inventory data after a new batch is added
+  };
+
+  React.useEffect(() => {
+    fetchInventory(); // Fetch inventory data when the component mounts
+  }, []);
+
+  const filteredRows = inventory.filter(row =>
+    row.productID.toLowerCase().includes(search.toLowerCase()) &&
     (category === '' || row.category === category)
   );
+
+  React.useEffect(() => {
+  inventory.forEach((row, index) => {
+    console.log(`Key: ${row.productID}-${row.receivedDate} (Index: ${index})`);
+});
+}, [inventory]);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -82,8 +142,8 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
             ))}
           </Select>
           <Box>
-            <Button variant="contained" color="success" onClick={onAdd} sx={{ marginRight: '10px' }}>
-              Add Product
+            <Button variant="contained" color="success" onClick={handleOpen} sx={{ marginRight: '10px' }}>
+              Add New Batch
             </Button>
             <Button
               variant="contained"
@@ -117,14 +177,15 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                  <TableRow key={row.productId} onClick={() => setSelectedRow(row)}>
-                    <TableCell>{row.productId}</TableCell>
-                    <TableCell>{row.category}</TableCell>
-                    <TableCell>{row.receivedDate}</TableCell>
-                    <TableCell>{row.stockQuantity}</TableCell>
+                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                  <TableRow key={'${row.productID}-${row.receivedDate.split("T")[0]-${index}'} onClick={() => setSelectedRow(row)}>
+                    <TableCell>{row.productID}</TableCell>
+                    <TableCell>{new Date(row.receivedDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{row.quantity}</TableCell>
                     <TableCell>{row.cost}</TableCell>
-                    <TableCell>{row.sellingPrice}</TableCell>
+                    <TableCell>{row.wholesalePrice}</TableCell>
+                    <TableCell>{row.retailPrice}</TableCell>
+                    <TableCell>{row.minStock}</TableCell>
                     <TableCell>{row.minProfitMargin}</TableCell>
                   </TableRow>
                 ))}
@@ -142,6 +203,13 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
           />
         </Paper>
       </Box>
+
+      {/* Modal for Batch Registration and Update */}
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{ ...modalStyle }}>
+          <AddBatchForm onClose={handleClose} onBatchAdded={handleBatchAdded} /> {/* No need to pass products */}
+        </Box>
+      </Modal>
     </Box>
   );
 }
