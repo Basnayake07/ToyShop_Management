@@ -4,6 +4,7 @@ import cors from 'cors';
 import productRoutes from './routes/productRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';  
 import db from './config/db.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -58,6 +59,9 @@ app.use('/api/auth', authRoutes);
 
 // Handle the inventory routes
 app.use('/api/inventory', inventoryRoutes);
+
+//Handle the customer request
+app.use('/api/customers', customerRoutes);
 
 // Login route
 //app.use('/api/login', authRoutes);

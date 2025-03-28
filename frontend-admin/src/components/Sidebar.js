@@ -13,7 +13,7 @@ const NAVIGATION_ITEMS = [
   { title: "Orders", icon: <FaClipboardList />, path: "/orders" },
   { title: "Inventory", icon: <FaClipboardList />, path: "/Inventory" },
   { title: "Invoices", icon: <FaFileInvoice />, path: "/invoices" },
-  { title: "Customer Management", icon: <FaUsers />, path: "/customers" },
+  { title: "Customer Management", icon: <FaUsers />, path: "/Customer" },
   { title: "Employee Management", icon: <FaUserTie />, path: "/Employee" },
   { title: "Supplier Management", icon: <FaUsersCog />, path: "/suppliers" },
   { title: "Reports", icon: <FaChartBar />, path: "/reports" },

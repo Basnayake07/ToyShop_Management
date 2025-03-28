@@ -8,18 +8,19 @@ import { Paper, Modal, Box, Button } from "@mui/material";
 import axios from "axios";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import AddProductForm from "@/components/AddProductForm"; // Import the AddProductForm component
+import AddProductForm from "@/components/AddProductForm"; 
 import Sidebar from "@/components/Sidebar";
+import OrderModal from "@/components/OrderModal"; // Import OrderModal component
 
 // ProductTable Component
 
-const ProductTable = ({ products, handleMoreSettings }) => {
+const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
   const columns = [
-    { field: 'productID', headerName: 'Product ID', width: 100 },
+    { field: 'productID', headerName: 'Product ID', width: 80 },
     {
       field: "image",
       headerName: "Product",
-      width: 150,
+      width: 130,
       renderCell: (params) => {
         const imageUrl = params.value;
         console.log("Image URL:", imageUrl);
@@ -38,14 +39,15 @@ const ProductTable = ({ products, handleMoreSettings }) => {
         );
       },
     },
-    { field: "name", headerName: "Product Name", width: 200 },
-    { field: "price", headerName: "Price", width: 100 },
-    { field: "stock", headerName: "Stock", width: 100 },
+    { field: "name", headerName: "Product Name", width: 160},
+    { field: "wholesalePrice", headerName: "Wholesale Price", width: 100 },
+    { field: "retailPrice", headerName: "Retail Price", width: 100 },
+    { field: "quantity", headerName: "Stock", width: 80 },
     { field: "category", headerName: "Category", width: 130 },
     {
       field: "rating",
       headerName: "Rating",
-      width: 130,
+      width: 80,
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <FaStar style={{ color: "#FFD700" }} />
@@ -74,7 +76,11 @@ const ProductTable = ({ products, handleMoreSettings }) => {
         checkboxSelection 
         rowHeight={100}
         sx={{ border: 0 }}
-        getRowId={(row) => row.productID} />
+        getRowId={(row) => row.productID} 
+        onRowSelectionModelChange={(ids) => {
+          const selectedRows = products.filter((product) => ids.includes(product.productID));
+          onSelectionChange(selectedRows); // Pass selected rows to the parent component
+        }}/>
     </Paper>
   );
 };
@@ -86,6 +92,8 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedAgeGroup, setSelectedAgeGroup] = useState("");
   const [open, setOpen] = useState(false); // State to manage modal open/close
+  const [orderModalOpen, setOrderModalOpen] = useState(false); // State to manage order modal visibility
+  const [selectedProducts, setSelectedProducts] = useState([]); // State to store selected products
 
   const fetchProducts = async () => {
     try {
@@ -113,6 +121,12 @@ const Product = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, selectedCategory, selectedAgeGroup, products]);
 
+  /* // Handle product selection from table
+  const handleProductSelection = (selection) => {
+    const selectedItems = products.filter(product => selection.includes(product.productID));
+    setSelectedProducts(selectedItems);
+  }; */
+
   const handleMoreSettings = (productId) => {
     // Handle more settings click event
     console.log(`More settings for product ID: ${productId}`);
@@ -124,6 +138,11 @@ const Product = () => {
   const handleProductAdded = () => {
     fetchProducts(); // Fetch the latest products after a new product is added
   };
+
+  const handleOpenOrderModal = () => setOrderModalOpen(true);
+  const handleCloseOrderModal = () => setOrderModalOpen(false);
+  
+
 
   return (
     <div style={{ display: "flex", backgroundColor: "#f0f0f0" }}>
@@ -165,10 +184,41 @@ const Product = () => {
         </select>
         <button className="export-btn">⬇ Export</button>
         <Button onClick={handleOpen} className="add-btn">+ Add New Product</Button> {/* Open modal on click */}
-        <button className="order-btn">📝 Set Order</button>
+
+        <button className="order-btn" onClick={handleOpenOrderModal} >
+          📝 Set Order</button>
+
+
+         {/*  <div style={{ height: 500, width: "100%" }}> 
+          <DataGrid
+          rows={products}
+          columns={[
+            { field: "productID", headerName: "ID", width: 80 },
+            { field: "name", headerName: "Product Name", width: 200 },
+            { field: "wholesalePrice", headerName: "Price", width: 100 },
+            { field: "stock", headerName: "Stock", width: 100 }
+          ]}
+          checkboxSelection
+          onRowSelectionModelChange={handleProductSelection}
+          getRowId={(row) => row.productID}
+      />
+      </div> */}
+
+
+        <OrderModal
+          isOpen={orderModalOpen}
+          onClose={handleCloseOrderModal}
+          selectedProducts={selectedProducts}
+          setSelectedProducts={setSelectedProducts}
+        />
+
+
       </div>
 
-      <ProductTable products={filteredProducts} handleMoreSettings={handleMoreSettings} />
+      <ProductTable 
+      products={filteredProducts} 
+      handleMoreSettings={handleMoreSettings}
+      onSelectionChange={setSelectedProducts} />
 
       {/* Modal for Add Product Form */}
       <Modal open={open} onClose={handleClose}>
@@ -195,5 +245,6 @@ const modalStyle = {
   boxShadow: 24,
   p: 4,
 };
+
 
 export default Product;

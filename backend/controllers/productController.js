@@ -43,13 +43,34 @@ export const productController = {
     
     
     // Fetch all products
-    getAllProducts: async (req, res) => {
-        try {
-            const [products] = await req.db.execute("SELECT * FROM product");
-            res.status(200).json(products);
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            res.status(500).json({ message: "Error fetching products", error });
-        }
-    },
-};
+    // Fetch all products with price and quantity from the inventory table
+getAllProducts: async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                p.productID, 
+                p.name, 
+                p.category, 
+                p.description, 
+                p.image, 
+                p.ageGrp, 
+                i.quantity, 
+                i.wholesalePrice,
+                i.retailPrice
+                
+            FROM 
+                product p
+            LEFT JOIN 
+                inventory i
+            ON 
+                p.productID = i.productID
+        `;
+
+        const [products] = await req.db.execute(query);
+        res.status(200).json(products);
+    } catch (error) {
+        console.error("Error fetching products with inventory details:", error);
+        res.status(500).json({ message: "Error fetching products", error });
+    }
+} };
+// Fetch product by I      

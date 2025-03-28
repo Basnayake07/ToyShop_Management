@@ -111,7 +111,7 @@ export const loginAdmin = async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        res.status(200).json({ message: 'Login successful', token });
+        res.status(200).json({ message: 'Login successful', token, adminID: admin.adminID });
 
     } catch (error) {
         console.error('Error:', error);

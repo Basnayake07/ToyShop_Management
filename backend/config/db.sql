@@ -43,4 +43,19 @@ CREATE TABLE inventory (
     FOREIGN KEY (productID) REFERENCES product(productID) ON DELETE CASCADE
 );
 
+CREATE TABLE customer (
+    cusID varchar(10) PRIMARY KEY ,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(50)  NOT NULL,
+    cusType ENUM('Wholesale', 'Retail') NOT NULL,
+    adminID varchar(10) Null,
+    password varchar(100) Not null,
+    FOREIGN KEY (adminID) REFERENCES admin(adminID) ON DELETE SET null
+);
 
+CREATE TABLE cus_phone (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    cusID varchar(10),
+    phoneNumber VARCHAR(15) NOT NULL,
+    FOREIGN KEY (cusID) REFERENCES customer(cusID) ON DELETE CASCADE
+);

@@ -5,14 +5,42 @@ import { useRouter } from 'next/navigation';
 import validateLogin from '@/components/LoginValidation';
 import axios from 'axios';
 import Link from 'next/link';
-import '@/styles/Login.css';
+
+// Material UI components
+import { TextField, Button, Typography, Box, Paper } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+const StyledContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundImage: `url('/assets/images/login.jpg')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    position: 'relative',
+});
+
+const Overlay = styled(Box)({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay
+});
+
+const StyledPaper = styled(Paper)({
+    zIndex: 2,
+    padding: '30px',
+    maxWidth: '400px',
+    width: '90%',
+    textAlign: 'center',
+    backgroundColor: 'rgba(205, 201, 201, 0.9)', 
+});
 
 function Login() {
-    const [values, setValues] = useState({
-        email: '',
-        password: ''
-    });
-
+    const [values, setValues] = useState({ email: '', password: '' });
     const [isClient, setIsClient] = useState(false);
     const [errors, setErrors] = useState({});
     const router = typeof window !== 'undefined' ? useRouter() : null;
@@ -22,8 +50,8 @@ function Login() {
     }, []);
 
     const handleInput = (event) => {
-        setValues(prev => ({...prev, [event.target.id]: event.target.value}));
-    }
+        setValues((prev) => ({ ...prev, [event.target.id]: event.target.value }));
+    };
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -32,56 +60,75 @@ function Login() {
 
         if (Object.keys(validationErrors).length === 0) {
             axios.post('http://localhost:8081/api/auth/login', values)
-            .then(res => {
-                console.log(res.data);
-                if(res.data.message === "Login successful") {
-                    // Save the token in local storage
-                    localStorage.setItem('token', res.data.token);
-                    if (isClient && router) {
-                        router.push('/Dashboard');
+                .then((res) => {
+                    if (res.data.message === 'Login successful') {
+                        localStorage.setItem('token', res.data.token);
+                        localStorage.setItem('adminID', res.data.adminID);
+                        if (isClient && router) {
+                            router.push('/Dashboard');
+                        }
+                    } else {
+                        alert('Invalid email or password');
                     }
-                } else {
-                    alert("Invalid email or password");
-                }
-            })
-            .catch(err => {
-                console.log(err);
-                alert("An error occurred. Please try again.");
-            });
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert('An error occurred. Please try again.');
+                });
         }
-    }
+    };
 
     return (
-        <div className="login-container">
-            <div className="overlay"></div>
-            <h1 className="shop-name" style={{zIndex:2}}>Perera Toyland</h1>
+        <StyledContainer>
+            <Overlay />
+            <StyledPaper elevation={5}>
+                <Typography variant="h4" color="primary" fontWeight="bold">
+                    Perera Toyland
+                </Typography>
+                <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
+                    Log in
+                </Typography>
 
-            <div className='d-flex justify-content-center align-items-center' style={{height: '100vh', zIndex: 2}}>
-                <div className='bg-white p-3 rounded w-200'>
-                    <h2 className='text-center'>Log in</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className='mb-3'>
-                            <label htmlFor="email">Email Address</label>
-                            <input type="email" id="email" placeholder="Enter email" required name='email'
-                            onChange={handleInput} className='form-control rounded-0'/>
-                            {errors.email && <span className='text-danger'>{errors.email}</span>}
-                        </div>
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Email Address"
+                        variant="outlined"
+                        id="email"
+                        value={values.email}
+                        onChange={handleInput}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                        sx={{ mb: 2 }}
+                    />
 
-                        <div className='mb-3'>
-                            <label htmlFor="password">Password</label>
-                            <input type="password" id="password" placeholder="Enter password" required name='password'
-                            onChange={handleInput} className='form-control rounded-0' />
-                            {errors.password && <span className='text-danger'>{errors.password}</span>}
-                        </div>
-                        
-                        <button type='submit' className='btn btn-success w-100 rounded-0'><strong>Log in</strong></button>
-                        <p>Don’t have an account?</p>
-                        <Link href="/signup" className='btn btn-default border w-100 bg-light text-decoration-none'>Register</Link>
-                    </form>
-                </div>
-            </div>
-        </div>
-    )
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        type="password"
+                        variant="outlined"
+                        id="password"
+                        value={values.password}
+                        onChange={handleInput}
+                        error={!!errors.password}
+                        helperText={errors.password}
+                        sx={{ mb: 2 }}
+                    />
+
+                    <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                        Log in
+                    </Button>
+                </form>
+
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                    Don’t have an account?
+                </Typography>
+                <Button variant="text" component={Link} href="/signup">
+                    Register
+                </Button>
+            </StyledPaper>
+        </StyledContainer>
+    );
 }
 
 export default Login;
