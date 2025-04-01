@@ -92,3 +92,38 @@ export const registerCustomerByAdmin = async (req, res) => {
       return res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+  // Delete Customer
+export const deleteCustomer = async (req, res) => {
+    const { cusID } = req.body;
+  
+    // Verify admin authentication
+    const token = req.headers["authorization"];
+    if (!token) {
+      return res.status(403).json({ message: "Access denied. No token provided." });
+    }
+  
+    try {
+      // Extract token after "Bearer "
+      const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+  
+      if (decoded.role !== "admin") {
+        return res.status(403).json({
+          message: "Access denied. Only admins can delete customers.",
+        });
+      }
+  
+      // Delete customer from customer table
+      const deleteCustomerQuery = "DELETE FROM customer WHERE cusID = ?";
+      await pool.query(deleteCustomerQuery, [cusID]);
+  
+      // Delete customer's phone numbers from cus_phone table
+      const deletePhoneQuery = "DELETE FROM cus_phone WHERE cusID = ?";
+      await pool.query(deletePhoneQuery, [cusID]);
+  
+      return res.status(200).json({ message: "Customer deleted successfully" });
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };

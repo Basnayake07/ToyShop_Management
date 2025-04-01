@@ -109,9 +109,11 @@ export default function CustomerManagement() {
       return;
     }
     try {
-      await axios.delete("http://localhost:8081/api/customers/delete", {
-        data: { customerID: selectedRow.cusID },
-      });
+      const token = localStorage.getItem("token"); 
+    await axios.delete("http://localhost:8081/api/customers/delete", {
+      headers: { Authorization: `Bearer ${token}` }, 
+      data: { cusID: selectedRow.cusID },
+    });
       alert("Customer deleted successfully.");
       fetchCustomers();
       setSelectedRow(null);
