@@ -127,3 +127,54 @@ export const deleteCustomer = async (req, res) => {
       return res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+  // update customer details
+export const updateCustomer = async (req, res) => {
+    const { cusID, name, email, phoneNumbers, cusType } = req.body;
+  
+    // Check if all required fields are provided
+    if (!cusID || !name || !email || !cusType || !phoneNumbers) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
+  
+    // Verify admin authentication
+    const token = req.headers["authorization"];
+    if (!token) {
+      return res.status(403).json({ message: "Access denied. No token provided." });
+    }
+  
+    try {
+      // Extract token after "Bearer "
+      const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+  
+      if (decoded.role !== "admin") {
+        return res.status(403).json({
+          message: "Access denied. Only admins can update customers.",
+        });
+      }
+  
+      // Update customer details in the customer table
+      const updateCustomerQuery =
+        "UPDATE customer SET name = ?, email = ?, cusType = ? WHERE cusID = ?";
+      await pool.query(updateCustomerQuery, [name, email, cusType, cusID]);
+  
+      // Delete existing phone numbers for the customer
+      const deletePhoneQuery = "DELETE FROM cus_phone WHERE cusID = ?";
+      await pool.query(deletePhoneQuery, [cusID]);
+  
+      // Insert new phone numbers for the customer
+      const insertPhoneQuery =
+        "INSERT INTO cus_phone (cusID, phoneNumber) VALUES (?, ?)";
+  
+      await Promise.all(
+        phoneNumbers.map((phoneNumber) =>
+          pool.query(insertPhoneQuery, [cusID, phoneNumber])
+        )
+      );
+  
+      return res.status(200).json({ message: "Customer updated successfully" });
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };

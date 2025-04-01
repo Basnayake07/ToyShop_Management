@@ -45,6 +45,13 @@ export default function CustomerManagement() {
     phoneNumbers: "",
     cusType: "",
   });
+  const [registerFormData, setRegisterFormData] = useState({
+    name: "",
+    email: "",
+    phoneNumbers: "",
+    cusType: "",
+  });
+  
   const [redirectToOrder, setRedirectToOrder] = useState(false); // Define the state for redirection
 
   const router = useRouter();
@@ -85,20 +92,24 @@ export default function CustomerManagement() {
     try {
       const token = localStorage.getItem("token");
       const adminID = localStorage.getItem("adminID");
-      console.log("Admin ID from localStorage:", adminID);
+  
+      const payload = { ...registerFormData, adminID };
+      console.log("Payload Sent to Backend:", payload); // Log the payload
+  
       await axios.post(
         "http://localhost:8081/api/customers/register",
-        {...formData, adminID},
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+  
       alert("Customer registered successfully.");
-      sessionStorage.setItem("redirectAfterRegister", "true"); // Set the flag for redirection
-      setRedirectToOrder(true); // Trigger redirection
+      sessionStorage.setItem("redirectAfterRegister", "true");
+      setRedirectToOrder(true);
       fetchCustomers();
     } catch (error) {
-      console.error("Error registering customer:", error);
+      console.error("Error registering customer:", error.response?.data || error.message);
       alert("Failed to register customer.");
     }
   };
@@ -123,6 +134,45 @@ export default function CustomerManagement() {
     }
   };
 
+  const handleUpdate = () => {
+    if (!selectedRow) {
+      alert("Please select a customer to update.");
+      return;
+    }
+    setFormData({
+      cusID: selectedRow.cusID,
+      name: selectedRow.name,
+      email: selectedRow.email,
+      phoneNumbers: selectedRow.phoneNumbers,
+      cusType: selectedRow.cusType.toLowerCase(),
+    });
+    setOpen(true); // Open the modal
+  };
+
+  const handleSaveUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const updatedData = {
+        cusID: formData.cusID,
+        name: formData.name,
+        email: formData.email,
+        phoneNumbers: formData.phoneNumbers.split(",").map((num) => num.trim()), // Convert to array
+        cusType: formData.cusType,
+      };
+
+      await axios.put("http://localhost:8081/api/customers/update", updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert("Customer updated successfully.");
+      setOpen(false); // Close the modal
+      fetchCustomers(); // Refresh the customer table
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      alert("Failed to update customer.");
+    }
+  };
+
   const filteredRows = rows.filter(
     (row) =>
       row.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -140,25 +190,28 @@ export default function CustomerManagement() {
             fullWidth
             label="Name"
             margin="normal"
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={registerFormData.name}
+            onChange={(e) => setRegisterFormData({ ...registerFormData, name: e.target.value })}
           />
           <TextField
             fullWidth
             label="Email"
             margin="normal"
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            value={registerFormData.email}
+            onChange={(e) => setRegisterFormData({ ...registerFormData, email: e.target.value })}
           />
           <TextField
             fullWidth
             label="Phone Numbers"
             margin="normal"
-            onChange={(e) => setFormData({ ...formData, phoneNumbers: e.target.value })}
+            value={registerFormData.phoneNumbers}
+            onChange={(e) => setRegisterFormData({ ...registerFormData, phoneNumbers: e.target.value })}
           />
           <FormControl fullWidth margin="normal">
             <InputLabel>Customer Type</InputLabel>
             <Select
-              value={formData.cusType}
-              onChange={(e) => setFormData({ ...formData, cusType: e.target.value })}
+              value={registerFormData.cusType}
+              onChange={(e) => setRegisterFormData({ ...registerFormData, cusType: e.target.value })}
             >
               <MenuItem value="wholesale">Wholesale</MenuItem>
               <MenuItem value="retail">Retail</MenuItem>
@@ -199,7 +252,7 @@ export default function CustomerManagement() {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => alert("Update functionality not implemented yet")}
+                onClick={handleUpdate}
                 disabled={!selectedRow}
               >
                 Update
@@ -219,6 +272,54 @@ export default function CustomerManagement() {
           </Paper>
         </div>
       </div>
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <Box sx={style}>
+          <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+            Update Customer
+          </Typography>
+          <TextField
+            fullWidth
+            label="Name"
+            margin="normal"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            margin="normal"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Phone Numbers"
+            margin="normal"
+            value={formData.phoneNumbers}
+            onChange={(e) => setFormData({ ...formData, phoneNumbers: e.target.value })}
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Customer Type</InputLabel>
+            <Select
+              value={formData.cusType}
+              onChange={(e) => setFormData({ ...formData, cusType: e.target.value })}
+            >
+              <MenuItem value="wholesale">Wholesale</MenuItem>
+              <MenuItem value="retail">Retail</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleSaveUpdate}
+            sx={{ mt: 2 }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Modal>
     </div>
+    
   );
 }
