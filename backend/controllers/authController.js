@@ -108,7 +108,7 @@ export const loginAdmin = async (req, res) => {
                 role: admin.role
             },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '5h' }
         );
 
         res.status(200).json({ message: 'Login successful', token, adminID: admin.adminID });
