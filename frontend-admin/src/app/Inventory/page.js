@@ -23,7 +23,7 @@ import axios from 'axios';
 
 const headCells = [
   { id: 'productID', label: 'Product ID' },
-  {id: 'category', label: 'Category'},
+  {id: 'batchID', label: 'Batch ID'},
   { id: 'receivedDate', label: 'Received Date' },
   { id: 'quantity', label: 'Quantity' },
   { id: 'cost', label: 'Cost' },
@@ -111,11 +111,11 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
     (category === '' || row.category === category)
   );
 
-  React.useEffect(() => {
+  /* React.useEffect(() => {
   inventory.forEach((row, index) => {
-    console.log(`Key: ${row.productID}-${row.receivedDate} (Index: ${index})`);
+    console.log(`Key: ${row.productID}-${row.batchID}`);
 });
-}, [inventory]);
+}, [inventory]); */
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -177,9 +177,13 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-                  <TableRow key={'${row.productID}-${row.receivedDate.split("T")[0]-${index}'} onClick={() => setSelectedRow(row)}>
+                {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                  const key = `${row.productID}-${row.batchID}`;
+                  console.log(`Key: ${key}`);
+                  return (
+                  <TableRow key={key} onClick={() => setSelectedRow(row)}>
                     <TableCell>{row.productID}</TableCell>
+                    <TableCell>{row.batchID}</TableCell>
                     <TableCell>{new Date(row.receivedDate).toLocaleDateString()}</TableCell>
                     <TableCell>{row.quantity}</TableCell>
                     <TableCell>{row.cost}</TableCell>
@@ -188,7 +192,9 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
                     <TableCell>{row.minStock}</TableCell>
                     <TableCell>{row.minProfitMargin}</TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
+                
               </TableBody>
             </Table>
           </TableContainer>

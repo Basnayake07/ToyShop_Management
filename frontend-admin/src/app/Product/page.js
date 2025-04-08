@@ -94,6 +94,7 @@ const Product = () => {
   const [open, setOpen] = useState(false); // State to manage modal open/close
   const [orderModalOpen, setOrderModalOpen] = useState(false); // State to manage order modal visibility
   const [selectedProducts, setSelectedProducts] = useState([]); // State to store selected products
+  const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store selected customer
 
   const fetchProducts = async () => {
     try {
@@ -109,6 +110,15 @@ const Product = () => {
     // Fetch product data from the backend
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      axios
+        .get(`http://localhost:8081/api/products?cusType=${selectedCustomer.cusType}`)
+        .then((response) => setProducts(response.data))
+        .catch((error) => console.error("Error fetching products:", error));
+    }
+  }, [selectedCustomer]);
 
   useEffect(() => {
     // Filter products based on search query, category, and age group

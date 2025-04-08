@@ -7,6 +7,8 @@ import axios from "axios";
 const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) => {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [quantities, setQuantities] = useState({}); // Local state for quantities
+  const [errors, setErrors] = useState({}); // Local state for error messages
   const router = useRouter();
 
   useEffect(() => {
@@ -15,22 +17,108 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       .catch(error => console.error("Error fetching customers:", error));
   }, []);
 
+  useEffect(() => {
+    if (selectedCustomer) {
+      //console.log("Selected Customer:", selectedCustomer); // Debugging: Check selected customer details
+  
+      // Update product prices based on customer type
+      const updatedProducts = selectedProducts.map((product) => {
+        console.log("Original Product:", product); // Debugging: Check original product details
+  
+        const price = (() => {
+          console.log("Customer Type:", selectedCustomer.cusType); // Debugging: Check customer type
+          console.log("Wholesale Price:", product.wholesalePrice); // Debugging: Check wholesale price
+          console.log("Retail Price:", product.retailPrice); // Debugging: Check retail price
+        
+          return selectedCustomer.cusType === "Wholesale"
+            ? product.wholesalePrice
+            : product.retailPrice;
+        })();
+  
+        console.log(
+          `Customer Type: ${selectedCustomer.cusType}, Product ID: ${product.productID}, Price: ${price}`
+        ); // Debugging: Check calculated price based on customer type
+  
+        return {
+          ...product,
+          price, // Add or update the price field
+        };
+      });
+  
+      //console.log("Updated Products:", updatedProducts); // Debugging: Check updated products with new prices
+      setSelectedProducts(updatedProducts); // Update the selectedProducts state
+    }
+  }, [selectedCustomer]);
+
+  const handleClose = () => {
+    setSelectedCustomer(null); // Reset selected customer
+    setQuantities({}); // Clear quantities
+    setErrors({}); // Clear errors
+    onClose(); // Call the parent onClose function
+  };
+
   // Handle Quantity Update
   const updateQuantity = (index, value) => {
-    if (value < 1) return;
-    const updatedProducts = [...selectedProducts];
-    updatedProducts[index].quantity = value;
-    setSelectedProducts(updatedProducts);
+    //console.log(`Updating quantity for index ${index} with value ${value}`);
+    const product = selectedProducts[index];
+
+    // Validate quantity
+    if (value < 1) {
+      console.log(`Validation failed: Quantity must be at least 1 for product ${product.productID}`);
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [product.productID]: "Quantity must be at least 1.",
+      }));
+      return;
+    }
+
+    if (value > product.quantity) {
+      console.log(`Stock validation failed for product ${product.productID}. Entered: ${value}, Available: ${product.stock}`);
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [product.productID]: `Stock is not enough. Available stock: ${product.quantity}`,
+      }));
+      return;
+    }
+
+    // Clear error if validation passes
+    setErrors((prevErrors) => {
+      const updatedErrors = { ...prevErrors };
+      delete updatedErrors[product.productID];
+      //console.log("Updated Errors:", updatedErrors);
+      return updatedErrors;
+    });
+
+    // Update the quantities state
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [product.productID]: value,
+    }));
   };
 
   // Remove Item
   const removeProduct = (index) => {
+    const product = selectedProducts[index];
     setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
+    setQuantities((prevQuantities) => {
+      const updatedQuantities = { ...prevQuantities };
+      delete updatedQuantities[product.productID];
+      return updatedQuantities;
+    });
+    setErrors((prevErrors) => {
+      const updatedErrors = { ...prevErrors };
+      delete updatedErrors[product.productID];
+      return updatedErrors;
+    });
   };
 
   // Calculate Total Price
   const calculateTotal = () => {
-    return selectedProducts.reduce((total, product) => total + product.retailPrice * product.quantity, 0).toFixed(2);
+    return selectedProducts.reduce((total, product) => {
+      const quantity = quantities[product.productID] || 0;
+      const price = selectedCustomer?.cusType === "Wholesale" ? product.wholesalePrice : product.retailPrice;
+      return total + price * quantity;
+    }, 0).toFixed(2);
   };
 
   // Redirect to Customer Registration & Save State
@@ -48,8 +136,11 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
 
     const orderData = {
       customerId: selectedCustomer.id,
-      products: selectedProducts.map(p => ({ productID: p.productID, quantity: p.quantity })),
-      total: calculateTotal()
+      products: selectedProducts.map((product) => ({
+        productID: product.productID,
+        quantity: quantities[product.productID] || 0,
+      })),
+      total: calculateTotal(),
     };
 
     axios.post("http://localhost:8081/api/orders", orderData)
@@ -61,27 +152,60 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
   };
 
   return (
-    <Modal open={isOpen} onClose={onClose}>
+    <Modal open={isOpen} onClose={handleClose}>
       <Box sx={{ ...modalStyle }}>
         <h2>My Order</h2>
 
-        {/* Customer Search */}
+              {/* Customer Search */}
         <Autocomplete
-          options={customers}
-          getOptionLabel={(customer) => `${customer.name} (ID: ${customer.cusID})`}
-          onChange={(event, newValue) => setSelectedCustomer(newValue)}
-          renderInput={(params) => <TextField {...params} label="Select Customer" />}
-        />
+        options={customers}
+        getOptionLabel={(customer) => `${customer.name} (ID: ${customer.cusID})`}
+        onChange={(event, newValue) => {
+          //console.log("Customer Selected:", newValue); // Debugging: Check selected customer
+          setSelectedCustomer(newValue);
+        }}
+        renderInput={(params) => <TextField {...params} label="Select Customer" />}
+      />
         <Button variant="contained" onClick={navigateToCustomerPage}>+ New Customer</Button>
 
         {selectedProducts.map((product, index) => (
           <div key={product.productID} className="order-item">
             <p>{product.name}</p>
-            <TextField 
-            type="number" 
-            value={product.quantity} 
-            onChange={(e) => updateQuantity(index, parseInt(e.target.value))} />
-            <span>Rs.{(product.retailPrice * product.quantity).toFixed(2)}</span>
+            <TextField
+              type="number"
+              placeholder="Enter quantity"
+              value={quantities[product.productID] || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                // Allow empty field while typing
+                if (value === "") {
+                  setQuantities((prev) => ({
+                    ...prev,
+                    [product.productID]: "",
+                  }));
+                  setErrors((prevErrors) => ({
+                    ...prevErrors,
+                    [product.productID]: "Quantity is required.",
+                  }));
+                  return;
+                }
+
+                const parsedValue = parseInt(value);
+
+                // Update immediately on every change
+                updateQuantity(index, parsedValue);
+              }}
+              error={!!errors[product.productID]} // Highlight textbox if there's an error
+              helperText={errors[product.productID] || ""} // Display error message below the textbox
+            />
+            <span>
+              Rs.{" "}
+              {(
+                (quantities[product.productID] || 0) *
+                (product.price || 0) // Use the updated price field
+              ).toFixed(2)}
+            </span>
             <IconButton onClick={() => removeProduct(index)}><FaTrash /></IconButton>
           </div>
         ))}

@@ -69,8 +69,16 @@ export const addInventory = async (req, res) => {
     }
   
     try {
-        const insertInventoryQuery = `INSERT INTO inventory (productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        await pool.query(insertInventoryQuery, [productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin]);
+
+        // Generate the next batchID
+        const getLastBatchIDQuery = "SELECT MAX(CAST(SUBSTRING(batchID, 3) AS UNSIGNED)) AS lastBatchID FROM inventory";
+        const [result] = await pool.query(getLastBatchIDQuery);
+        const lastBatchID = result[0].lastBatchID || 0;
+        const nextBatchID = `BA${lastBatchID + 1}`;
+
+
+        const insertInventoryQuery = `INSERT INTO inventory (batchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        await pool.query(insertInventoryQuery, [nextBatchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin]);
   
         return res.status(200).json({ message: 'Inventory added successfully' });
     } catch (error) {

@@ -5,6 +5,7 @@ import debounce from "lodash/debounce";
 
 const AddBatchForm = ({ onClose, onBatchAdded }) => {
   const [batch, setBatch] = useState({
+    batchID: "",
     productID: "",
     receivedDate: "",
     quantity: "",
