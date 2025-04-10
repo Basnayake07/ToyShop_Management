@@ -133,24 +133,32 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       alert("Please select a customer");
       return;
     }
-
+  
+    // Prepare the order data
     const orderData = {
-      customerId: selectedCustomer.id,
+      cusID: selectedCustomer.cusID, // Use cusID from the selected customer
       products: selectedProducts.map((product) => ({
         productID: product.productID,
         quantity: quantities[product.productID] || 0,
+        price: product.price, // Use the price field from the product
       })),
-      total: calculateTotal(),
+      totalPrice: calculateTotal(), // Calculate the total price
     };
-
-    axios.post("http://localhost:8081/api/orders", orderData)
+  
+    // Send the order data to the backend
+    axios
+      .post("http://localhost:8081/api/orders", orderData)
       .then(() => {
         alert("Order placed successfully!");
-        onClose(); // Close modal after order is placed
+        onClose(); // Close the modal after placing the order
       })
-      .catch(error => console.error("Error placing order:", error));
+      .catch((error) => {
+        console.error("Error placing order:", error.response?.data || error.message);
+        alert("Failed to place order.");
+      });
   };
 
+  
   return (
     <Modal open={isOpen} onClose={handleClose}>
       <Box sx={{ ...modalStyle }}>

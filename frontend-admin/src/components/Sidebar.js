@@ -10,12 +10,12 @@ const drawerWidth = 240;
 const NAVIGATION_ITEMS = [
   { title: "Dashboard", icon: <FaBox />, path: "/Dashboard" },
   { title: "Product", icon: <FaClipboardList />, path: "/Product" },
-  { title: "Orders", icon: <FaClipboardList />, path: "/orders" },
+  { title: "Orders", icon: <FaClipboardList />, path: "/Orders" },
   { title: "Inventory", icon: <FaClipboardList />, path: "/Inventory" },
   { title: "Invoices", icon: <FaFileInvoice />, path: "/invoices" },
   { title: "Customer Management", icon: <FaUsers />, path: "/Customer" },
   { title: "Employee Management", icon: <FaUserTie />, path: "/Employee" },
-  { title: "Supplier Management", icon: <FaUsersCog />, path: "/suppliers" },
+  { title: "Supplier Management", icon: <FaUsersCog />, path: "/Supplier" },
   { title: "Reports", icon: <FaChartBar />, path: "/reports" },
 ];
 
