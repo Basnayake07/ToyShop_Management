@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, TextField, Button, IconButton, Table, TableHead, TableRow,
-  TableCell, TableBody, Modal, Typography, Paper, Grid, Divider
+  TableCell, TableBody, Typography, Paper, Grid, Divider, Autocomplete
 } from '@mui/material';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import axios from 'axios';
@@ -11,9 +11,9 @@ import Sidebar from '@/components/Sidebar';
 
 const SupplierForm = () => {
   const [supplier, setSupplier] = useState({
-    suppID: '',
     name: '',
     email: '',
+    password: '',
     phoneNumbers: [''],
   });
 
@@ -25,8 +25,7 @@ const SupplierForm = () => {
   });
 
   const [suppliersList, setSuppliersList] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [supplierOptions, setSupplierOptions] = useState([]);
 
   useEffect(() => {
     fetchSuppliers();
@@ -36,6 +35,12 @@ const SupplierForm = () => {
     try {
       const res = await axios.get('http://localhost:8081/api/suppliers');
       setSuppliersList(res.data || []);
+      setSupplierOptions(
+        res.data.map((supplier) => ({
+          label: `${supplier.suppID} - ${supplier.name}`,
+          suppID: supplier.suppID,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching suppliers:', err);
       setSuppliersList([]);
@@ -89,11 +94,7 @@ const SupplierForm = () => {
     calculateTotal(updatedItems);
   };
 
-  const handleStatusChange = (e) => {
-    const { value } = e.target;
-    setPurchaseOrder((prev) => ({ ...prev, status: value }));
-  };
-
+ 
   const calculateTotal = (items) => {
     const total = items.reduce((sum, item) => {
       const quantity = parseFloat(item.quantity) || 0;
@@ -105,18 +106,33 @@ const SupplierForm = () => {
 
   const handleSaveSupplier = async () => {
     try {
-      if (!supplier.suppID || !supplier.name || !supplier.email) {
-        alert('Supplier ID, Name, and Email are required.');
+      if (!supplier.name || !supplier.email || !supplier.password) {
+        alert('Supplier Name, Email, and Password are required.');
         return;
       }
-
-      await axios.post('http://localhost:8081/api/suppliers', supplier);
+  
+      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      if (!token) {
+        alert('You are not authorized to perform this action.');
+        return;
+      }
+  
+      await axios.post(
+        'http://localhost:8081/api/suppliers',
+        supplier,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the request
+          },
+        }
+      );
+  
       fetchSuppliers();
       alert('Supplier saved successfully!');
-      setSupplier({ suppID: '', name: '', email: '', phoneNumbers: [''] });
+      setSupplier({ name: '', email: '', password: '', phoneNumbers: [''] });
     } catch (error) {
       console.error('Error saving supplier:', error);
-      alert('Failed to save supplier.');
+      alert(error.response?.data?.message || 'Failed to save supplier.');
     }
   };
 
@@ -132,16 +148,7 @@ const SupplierForm = () => {
     }
   };
 
-  const handleRowClick = async (supplierID) => {
-    try {
-      const res = await axios.get(`http://localhost:8081/api/purchase-orders/${supplierID}`);
-      setSelectedOrder(res.data);
-      setOpenModal(true);
-    } catch (err) {
-      console.error('Error loading order details:', err);
-    }
-  };
-
+  
   return (
     <Box sx={{ display: 'flex' }}>
       <Sidebar />
@@ -152,10 +159,9 @@ const SupplierForm = () => {
             <Typography variant="h5" gutterBottom>
               Supplier Details
             </Typography>
-            <TextField label="Supplier ID" name="suppID" value={supplier.suppID} onChange={handleSupplierChange} fullWidth margin="normal" />
             <TextField label="Name" name="name" value={supplier.name} onChange={handleSupplierChange} fullWidth margin="normal" />
             <TextField label="Email" name="email" value={supplier.email} onChange={handleSupplierChange} fullWidth margin="normal" />
-
+            <TextField label="Password" name="password" type="password" value={supplier.password} onChange={handleSupplierChange} fullWidth margin="normal" />
             <Typography variant="subtitle1" sx={{ mt: 2 }}>Phone Numbers</Typography>
             {supplier.phoneNumbers.map((phone, index) => (
               <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -183,53 +189,69 @@ const SupplierForm = () => {
 
           {/* Purchase Order Form */}
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Purchase Order
-            </Typography>
+      <Typography variant="h5" gutterBottom>
+        Purchase Order
+      </Typography>
+
+      {/* Searchable Supplier ID Field */}
+      <Autocomplete
+        options={supplierOptions}
+        getOptionLabel={(option) => option.label}
+        onChange={(event, newValue) => {
+          setPurchaseOrder((prev) => ({
+            ...prev,
+            suppID: newValue ? newValue.suppID : "",
+          }));
+        }}
+        renderInput={(params) => (
+          <TextField {...params} label="Search Supplier ID or Name" fullWidth margin="normal" />
+        )}
+      />
+
+      {purchaseOrder.items.map((item, index) => (
+        <Grid container spacing={2} key={index} sx={{ mb: 1 }}>
+          <Grid item xs={4}>
             <TextField
-              label="Supplier ID or Name"
-              value={purchaseOrder.supplierID}
-              onChange={(e) => setPurchaseOrder({ ...purchaseOrder, suppID: e.target.value })}
+              label="Product ID"
+              value={item.productID}
+              onChange={(e) => handleItemChange(index, "productID", e.target.value)}
               fullWidth
-              margin="normal"
             />
-            {purchaseOrder.items.map((item, index) => (
-              <Grid container spacing={2} key={index} sx={{ mb: 1 }}>
-                <Grid item xs={4}>
-                  <TextField label="Product ID" value={item.productID} onChange={(e) => handleItemChange(index, 'productID', e.target.value)} fullWidth />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField label="Quantity" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} fullWidth />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField label="Cost" value={item.cost} onChange={(e) => handleItemChange(index, 'cost', e.target.value)} fullWidth />
-                </Grid>
-                <Grid item xs={2}>
-                  <IconButton onClick={() => removeItem(index)}><FaTrash /></IconButton>
-                </Grid>
-              </Grid>
-            ))}
-            <Button onClick={addItem} variant="outlined" startIcon={<FaPlus />} sx={{ mb: 2 }}>
-              Add Product
-            </Button>
+          </Grid>
+          <Grid item xs={3}>
             <TextField
-              label="Status"
-              value={purchaseOrder.status}
-              onChange={handleStatusChange}
+              label="Quantity"
+              value={item.quantity}
+              onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
               fullWidth
-              margin="normal"
-              select
-              SelectProps={{ native: true }}
-            >
-              <option value="Pending">Pending</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Completed">Completed</option>
-            </TextField>
-            <Typography variant="h6">Total Amount: Rs. {purchaseOrder.total.toFixed(2)}</Typography>
-            <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handleSavePurchaseOrder}>
-              Save Purchase Order
-            </Button>
-          </Paper>
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <TextField
+              label="Cost"
+              value={item.cost}
+              onChange={(e) => handleItemChange(index, "cost", e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <IconButton onClick={() => removeItem(index)}>
+              <FaTrash />
+            </IconButton>
+          </Grid>
+        </Grid>
+      ))}
+
+      <Button onClick={addItem} variant="outlined" startIcon={<FaPlus />} sx={{ mb: 2 }}>
+        Add Product
+      </Button>
+
+      <Typography variant="h6">Total Amount: Rs. {purchaseOrder.total.toFixed(2)}</Typography>
+      <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handleSavePurchaseOrder}>
+        Save Purchase Order
+      </Button>
+    </Paper>
+  
         </Grid>
 
         {/* Supplier Table */}
@@ -244,14 +266,16 @@ const SupplierForm = () => {
                   <TableCell>Supplier ID</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
+                  <TableCell>Phone Numbers</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {suppliersList.map((sup) => (
-                  <TableRow key={sup.suppID} onClick={() => handleRowClick(sup.suppID)} style={{ cursor: 'pointer' }}>
+                  <TableRow key={sup.suppID} >
                     <TableCell>{sup.suppID}</TableCell>
                     <TableCell>{sup.name}</TableCell>
                     <TableCell>{sup.email}</TableCell>
+                    <TableCell>{sup.phoneNumbers}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -260,37 +284,7 @@ const SupplierForm = () => {
         </Grid>
       </Grid>
 
-      {/* Purchase Order Modal */}
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box sx={{ p: 4, backgroundColor: 'white', maxWidth: 600, margin: '100px auto', borderRadius: 2, boxShadow: 3 }}>
-          {selectedOrder ? (
-            <>
-              <Typography variant="h6" gutterBottom>
-                Purchase Order Details
-              </Typography>
-              {selectedOrder.map((order, idx) => (
-                <Box key={idx} sx={{ my: 2 }}>
-                  <Typography>Order ID: {order.purchaseID}</Typography>
-                  <Typography>Order Date: {order.purchaseDate}</Typography>
-                  <Typography>Status: {order.status}</Typography>
-                  <Divider sx={{ my: 1 }} />
-                  {order.items.map((item, itemIdx) => (
-                    <Box key={itemIdx} sx={{ my: 1 }}>
-                      <Typography>Product ID: {item.productID}</Typography>
-                      <Typography>Quantity: {item.quantity}</Typography>
-                      <Typography>Cost: Rs. {item.cost}</Typography>
-                    </Box>
-                  ))}
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1">Total: Rs. {order.total}</Typography>
-                </Box>
-              ))}
-            </>
-          ) : (
-            <Typography>Loading...</Typography>
-          )}
-        </Box>
-      </Modal>
+  
     </Box>
   );
 };

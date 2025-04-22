@@ -1,29 +1,62 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/email.js";
+
 export const supplierController = {
   // Create a new supplier
   createSupplier: async (req, res) => {
-    const { suppID, name, email, phoneNumbers } = req.body;
+    const { name, email, password, phoneNumbers } = req.body;
+
+    // Validate input fields
+    if (!name || !email || !password || !phoneNumbers || phoneNumbers.length === 0) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
+
+    // Validate role from token
+    const token = req.headers["authorization"];
+    if (!token) {
+      return res.status(403).json({ message: "Access denied. No token provided." });
+    }
 
     try {
-      // Insert supplier details
-      const supplierQuery = `
-        INSERT INTO supplier (suppID, name, email)
-        VALUES (?, ?, ?)
-      `;
-      await req.db.execute(supplierQuery, [suppID, name, email]);
+      const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
 
-      // Insert phone numbers
+      if (decoded.role !== "admin") {
+        return res.status(403).json({ message: "Access denied. Only admins can register suppliers." });
+      }
+
+      // Generate the next supplier ID (e.g., SUP1, SUP2, ...)
+      const getLastIDQuery = `
+        SELECT MAX(CAST(SUBSTRING(suppID, 4) AS UNSIGNED)) AS lastID
+        FROM supplier
+      `;
+      const [result] = await req.db.execute(getLastIDQuery);
+      const lastID = result[0].lastID || 0;
+      const nextSuppID = `SUP${lastID + 1}`;
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Insert into supplier table
+      const insertSupplierQuery = `
+        INSERT INTO supplier (suppID, name, email, password)
+        VALUES (?, ?, ?, ?)
+      `;
+      await req.db.execute(insertSupplierQuery, [nextSuppID, name, email, hashedPassword]);
+
+      // Insert phone numbers into supp_phone table
       const phoneQuery = `
         INSERT INTO supp_phone (suppID, phoneNumber)
         VALUES (?, ?)
       `;
       for (const phone of phoneNumbers) {
-        await req.db.execute(phoneQuery, [suppID, phone]);
+        await req.db.execute(phoneQuery, [nextSuppID, phone]);
       }
 
-      res.status(201).json({ message: "Supplier created successfully" });
+      res.status(201).json({ message: "Supplier registered successfully", suppID: nextSuppID });
     } catch (error) {
-      console.error("Error creating supplier:", error);
-      res.status(500).json({ message: "Error creating supplier", error });
+      console.error("Error registering supplier:", error);
+      res.status(500).json({ message: "Server error during supplier registration", error });
     }
   },
 
@@ -88,6 +121,44 @@ export const supplierController = {
         ]);
       }
   
+
+      // Fetch supplier details
+    const supplierQuery = `SELECT name, email FROM supplier WHERE suppID = ?`;
+    const [[supplier]] = await req.db.execute(supplierQuery, [suppID]);
+
+    // Prepare the email content
+    const itemsList = items
+      .map((item) => `- Product ID: ${item.productID}, Quantity: ${item.quantity}, Unit Cost: Rs. ${item.cost}`)
+      .join("\n");
+
+    const emailText = `
+        Dear ${supplier.name},
+
+        You have received a new purchase order. Here are the details:
+
+        Order ID: ${nextPurchaseID}
+        Date: ${new Date().toLocaleDateString()}
+
+        Products:
+        ${itemsList}
+
+        Total Cost: Rs. ${total}
+
+        Thank you for your continued partnership!
+
+        Best regards,
+        Perera Toyland
+        `;
+
+    // Send the email
+    await sendEmail({
+      to: supplier.email,
+      subject: `New Purchase Order from Perera Toyland`,
+      text: emailText,
+    });
+
+    console.log("✅ Email sent to supplier:", supplier.email);
+
       res.status(201).json({ message: "Purchase order created successfully" });
     } catch (error) {
       console.error("Error creating purchase order:", error);
@@ -95,41 +166,68 @@ export const supplierController = {
     }
   },
 
-  // Get purchase orders by supplier ID
-  getPurchaseOrdersBySupplier: async (req, res) => {
-    const { suppID } = req.params;
-
+  // Get all purchase orders
+  getAllPurchaseOrders: async (req, res) => {
     try {
-      // Get purchase orders for the supplier
-      const orderQuery = `
-        SELECT po.purchaseID, po.purchaseDate, po.total, po.status, 
-               poi.productID, poi.quantity, poi.cost
+      const query = `
+        SELECT po.purchaseID, po.purchaseDate AS orderDate, po.total, po.status, po.comments,
+               s.suppID, s.name AS supplierName
         FROM purchaseOrder po
-        LEFT JOIN purchaseOrderItem poi ON po.purchaseID = poi.purchaseID
-        WHERE po.suppID = ?
+        LEFT JOIN supplier s ON po.suppID = s.suppID
       `;
-      const [orders] = await req.db.execute(orderQuery, [suppID]);
-
-      // Group items by purchase ID
-      const groupedOrders = orders.reduce((acc, order) => {
-        const { purchaseID, purchaseDate, total, status, productID, quantity, cost } = order;
-        if (!acc[purchaseID]) {
-          acc[purchaseID] = {
-            purchaseID,
-            purchaseDate,
-            total,
-            status,
-            items: [],
-          };
-        }
-        acc[purchaseID].items.push({ productID, quantity, cost });
-        return acc;
-      }, {});
-
-      res.status(200).json(Object.values(groupedOrders));
+      const [orders] = await req.db.execute(query);
+  
+      res.status(200).json(orders);
     } catch (error) {
       console.error("Error fetching purchase orders:", error);
       res.status(500).json({ message: "Error fetching purchase orders", error });
+    }
+  },
+
+  // Get purchase orders by supplier ID
+  getPurchaseOrderDetails: async (req, res) => {
+    const { purchaseID } = req.params;
+  
+    try {
+      const query = `
+        SELECT po.purchaseID, po.purchaseDate AS orderDate, po.total, po.status, 
+               poi.productID, p.name AS productName, poi.quantity, poi.cost, 
+               s.suppID, s.name AS supplierName
+        FROM purchaseOrder po
+        LEFT JOIN purchaseOrderItem poi ON po.purchaseID = poi.purchaseID
+        LEFT JOIN product p ON poi.productID = p.productID
+        LEFT JOIN supplier s ON po.suppID = s.suppID
+        WHERE po.purchaseID = ?
+      `;
+      const [orders] = await req.db.execute(query, [purchaseID]);
+  
+      if (orders.length === 0) {
+        return res.status(404).json({ message: "Purchase order not found" });
+      }
+  
+      // Group items for the purchase order
+      const { purchaseID: id, orderDate, total, status, supplierName, suppID } = orders[0];
+      const items = orders.map((order) => ({
+        productID: order.productID,
+        productName: order.productName,
+        quantity: order.quantity,
+        cost: order.cost,
+      }));
+  
+      const purchaseOrder = {
+        purchaseID: id,
+        orderDate,
+        total,
+        status,
+        supplierName,
+        suppID,
+        items,
+      };
+  
+      res.status(200).json(purchaseOrder);
+    } catch (error) {
+      console.error("Error fetching purchase order details:", error);
+      res.status(500).json({ message: "Error fetching purchase order details", error });
     }
   },
 };

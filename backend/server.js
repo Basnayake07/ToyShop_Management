@@ -7,6 +7,8 @@ import inventoryRoutes from './routes/inventoryRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';  
 import supplierRoutes from './routes/supplierRoute.js'; 
 import orderRoutes from './routes/orderRoutes.js'; 
+import supplierLoginRoutes from './routes/supplierLoginRoute.js';
+import invoiceRoutes from "./routes/invoiceRoutes.js";
 import db from './config/db.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -73,6 +75,12 @@ app.use('/api', supplierRoutes);
 
 // Handle the order routes
 app.use('/api', orderRoutes);
+
+// Supplier-End login routes
+app.use('/api/supplier-auth', supplierLoginRoutes);
+
+// Handle the invoice routes
+app.use("/api/invoices", invoiceRoutes);
 
 app.listen(8081, () => {
   console.log('listening on port 8081');

@@ -16,6 +16,7 @@ const NAVIGATION_ITEMS = [
   { title: "Customer Management", icon: <FaUsers />, path: "/Customer" },
   { title: "Employee Management", icon: <FaUserTie />, path: "/Employee" },
   { title: "Supplier Management", icon: <FaUsersCog />, path: "/Supplier" },
+  { title: "Purchase Orders", icon: <FaClipboardList />, path: "/PurchaseOrder" },
   { title: "Reports", icon: <FaChartBar />, path: "/reports" },
 ];
 

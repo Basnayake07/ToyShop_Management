@@ -12,7 +12,10 @@ router.get("/suppliers", supplierController.getAllSuppliers);
 // Route to create a new purchase order
 router.post("/purchase-orders", supplierController.createPurchaseOrder);
 
-// Route to get purchase orders by supplier ID
-router.get("/purchase-orders/:suppID", supplierController.getPurchaseOrdersBySupplier);
+// Route to get all purchase orders for the table
+router.get("/purchase-orders", supplierController.getAllPurchaseOrders);
+
+// Route to get detailed purchase order information
+router.get("/purchase-orders/details/:purchaseID", supplierController.getPurchaseOrderDetails);
 
 export default router;
