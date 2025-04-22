@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import "@/styles/OrderList.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { Paper, Modal, Box, Button, Typography, TextField } from "@mui/material";
+import { Grid, Table, TableContainer, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 
@@ -11,7 +13,14 @@ const OrdersTable = ({ orders, onRowClick }) => {
   const columns = [
     { field: "orderID", headerName: "Order ID", width: 100 },
     { field: "customerName", headerName: "Customer Name", width: 150 },
-    { field: "orderDate", headerName: "Order Date", width: 150 },
+    {
+      field: "orderDate",
+      headerName: "Date",
+      width: 120,
+      renderCell: (params) => (
+        <span>{new Date(params.value).toISOString().split('T')[0]}</span>
+      ),
+    },
     { field: "totalPrice", headerName: "Total Price (Rs.)", width: 120 },
     { field: "payStatus", headerName: "Payment Status", width: 150 },
     {
@@ -122,60 +131,95 @@ const Orders = () => {
 
         {/* Order Details Modal */}
         <Modal open={openModal} onClose={handleCloseModal}>
-          <Box sx={{ ...modalStyle }}>
-            {selectedOrder ? (
-              <>
-                <Typography variant="h6" gutterBottom>
-                  Order Details
-                </Typography>
-                <Typography>
-                  <strong>Order ID:</strong> {selectedOrder.order.orderID}
-                </Typography>
-                <Typography>
-                  <strong>Customer Name:</strong> {selectedOrder.order.customerName}
-                </Typography>
-                <Typography>
-                  <strong>Order Date:</strong> {new Date(selectedOrder.order.orderDate).toLocaleDateString()}
-                </Typography>
-                <Typography>
-                  <strong>Total Price:</strong> Rs. {selectedOrder.order.totalPrice}
-                </Typography>
-                <Typography>
-                  <strong>Payment Status:</strong> {selectedOrder.order.payStatus}
-                </Typography>
-                <Typography variant="h6" sx={{ mt: 2 }}>
-                  Items
-                </Typography>
-                {selectedOrder.items.map((item, index) => (
-                  <Box key={index} sx={{ mb: 2 }}>
-                    <Typography>
-                      <strong>Product ID:</strong> {item.productID}
-                    </Typography>
-                    <Typography>
-                      <strong>Product Name:</strong> {item.productName}
-                    </Typography>
-                    <Typography>
-                      <strong>Quantity:</strong> {item.quantity}
-                    </Typography>
-                    <Typography>
-                      <strong>Price:</strong> Rs. {item.price}
-                    </Typography>
-                  </Box>
-                ))}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={handleCloseModal}
-                >
-                  Close
-                </Button>
-              </>
-            ) : (
-              <Typography>Loading...</Typography>
-            )}
-          </Box>
-        </Modal>
+  <Box
+    sx={{
+      p: 4,
+      backgroundColor: "white",
+      maxWidth: 600,
+      margin: "100px auto",
+      borderRadius: 2,
+      boxShadow: 3,
+      position: "relative",
+    }}
+  >
+    {selectedOrder ? (
+      <>
+        {/* Modal Header */}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Typography variant="h5" fontWeight="bold">
+            Order Details
+          </Typography>
+          
+        </Box>
+
+        {/* Order Information */}
+        <Paper elevation={1} sx={{ p: 2, mb: 3, backgroundColor: "#f8f9fa" }}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography variant="body2" color="text.secondary">Order ID</Typography>
+              <Typography variant="body1" fontWeight="medium">{selectedOrder.order.orderID}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="body2" color="text.secondary">Order Date</Typography>
+              <Typography variant="body1">{new Date(selectedOrder.order.orderDate).toLocaleDateString()}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="body2" color="text.secondary">Customer Name</Typography>
+              <Typography variant="body1">{selectedOrder.order.customerName}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="body2" color="text.secondary">Payment Status</Typography>
+              <Typography variant="body1">{selectedOrder.order.payStatus}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="body2" color="text.secondary">Total Price</Typography>
+              <Typography variant="body1">Rs. {selectedOrder.order.totalPrice}</Typography>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Items Table */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Order Items
+        </Typography>
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: "#f1f3f5" }}>
+              <TableRow>
+                <TableCell>Product ID</TableCell>
+                <TableCell>Product Name</TableCell>
+                <TableCell align="right">Quantity</TableCell>
+                <TableCell align="right">Price (Rs.)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {selectedOrder.items.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.productID}</TableCell>
+                  <TableCell>{item.productName}</TableCell>
+                  <TableCell align="right">{item.quantity}</TableCell>
+                  <TableCell align="right">{item.price}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Footer */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Button variant="outlined" onClick={handleCloseModal}>
+            Close
+          </Button>
+          <Button variant="contained" color="primary">
+            Print Order
+          </Button>
+        </Box>
+      </>
+    ) : (
+      <Typography>No order selected</Typography>
+    )}
+  </Box>
+</Modal>
       </div>
     </div>
   );

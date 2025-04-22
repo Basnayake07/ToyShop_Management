@@ -1,4 +1,6 @@
+
 'use client';
+
 
 import React, { useState, useEffect } from "react";
 import "@/styles/ProductList.css";
@@ -8,13 +10,18 @@ import { Paper, Modal, Box, Button } from "@mui/material";
 import axios from "axios";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import AddProductForm from "@/components/AddProductForm"; 
+import AddProductForm from "@/components/AddProductForm";
 import Sidebar from "@/components/Sidebar";
-import OrderModal from "@/components/OrderModal"; // Import OrderModal component
+import OrderModal from "@/components/OrderModal";
+//import { useCart } from "@/components/CartContext";
+ // Import OrderModal component
+
 
 // ProductTable Component
 
+
 const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
+  const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const columns = [
     { field: 'productID', headerName: 'Product ID', width: 80 },
     {
@@ -24,6 +31,7 @@ const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
       renderCell: (params) => {
         const imageUrl = params.value;
         console.log("Image URL:", imageUrl);
+
 
         return (
           <LazyLoadImage
@@ -67,23 +75,54 @@ const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
     },
   ];
 
+  const handleRowSelectionChange = (ids) => {
+    setRowSelectionModel(ids); // Update the selected row IDs in state
+
+    // Get the currently selected rows based on IDs
+    const selectedRows = products.filter((product) => ids.includes(product.productID));
+
+    // Get the current session ID
+    const currentSessionID = sessionStorage.getItem("sessionID");
+
+    // Check if this is the first selection after a session clear
+    const previousProducts = currentSessionID
+      ? [] // If we have a session ID, start fresh
+      : JSON.parse(sessionStorage.getItem("selectedProducts")) || [];
+
+    // Merge products
+    const mergedProducts = [
+      ...previousProducts,
+      ...selectedRows.filter(
+        (newProd) => !previousProducts.some((prev) => prev.productID === newProd.productID)
+      ),
+    ];
+
+    // Save to session
+    sessionStorage.setItem("selectedProducts", JSON.stringify(mergedProducts));
+    sessionStorage.removeItem("sessionID"); // Remove the session ID so future selections merge normally
+
+    // Update parent state
+    onSelectionChange(mergedProducts);
+  };
+
+
   return (
     <Paper sx={{ height: 500, width: "100%" }}>
-      <DataGrid 
-        rows={products} 
-        columns={columns} 
-        pageSizeOptions={[5, 10]} 
-        checkboxSelection 
+      <DataGrid
+        rows={products}
+        columns={columns}
+        pageSizeOptions={[5, 10]}
+        checkboxSelection
         rowHeight={100}
         sx={{ border: 0 }}
-        getRowId={(row) => row.productID} 
-        onRowSelectionModelChange={(ids) => {
-          const selectedRows = products.filter((product) => ids.includes(product.productID));
-          onSelectionChange(selectedRows); // Pass selected rows to the parent component
-        }}/>
+        getRowId={(row) => row.productID}
+        rowSelectionModel={rowSelectionModel} // Controlled selection model
+        onRowSelectionModelChange={handleRowSelectionChange} // Use the refactored function
+      />
     </Paper>
   );
 };
+
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -95,6 +134,8 @@ const Product = () => {
   const [orderModalOpen, setOrderModalOpen] = useState(false); // State to manage order modal visibility
   const [selectedProducts, setSelectedProducts] = useState([]); // State to store selected products
   const [selectedCustomer, setSelectedCustomer] = useState(null); // State to store selected customer
+  const [rowSelectionModel, setRowSelectionModel] = useState([]);
+
 
   const fetchProducts = async () => {
     try {
@@ -106,10 +147,12 @@ const Product = () => {
     }
   };
 
+
   useEffect(() => {
     // Fetch product data from the backend
     fetchProducts();
   }, []);
+
 
   useEffect(() => {
     if (selectedCustomer) {
@@ -119,6 +162,7 @@ const Product = () => {
         .catch((error) => console.error("Error fetching products:", error));
     }
   }, [selectedCustomer]);
+
 
   useEffect(() => {
     // Filter products based on search query, category, and age group
@@ -131,27 +175,60 @@ const Product = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, selectedCategory, selectedAgeGroup, products]);
 
+
+  // Add this to your Product component
+useEffect(() => {
+  // Check if there's a new session ID each time orderModalOpen changes
+  const currentSessionID = sessionStorage.getItem("sessionID");
+ 
+  if (orderModalOpen && currentSessionID) {
+    // If there's a session ID and we're opening the modal,
+    // make sure our local state is in sync
+    const storedProducts = sessionStorage.getItem("selectedProducts");
+    if (!storedProducts || storedProducts === "[]") {
+      setSelectedProducts([]);
+    } else {
+      try {
+        setSelectedProducts(JSON.parse(storedProducts));
+      } catch (e) {
+        console.error("Error parsing stored products:", e);
+        setSelectedProducts([]);
+      }
+    }
+  }
+}, [orderModalOpen]);
+
+
   /* // Handle product selection from table
   const handleProductSelection = (selection) => {
     const selectedItems = products.filter(product => selection.includes(product.productID));
     setSelectedProducts(selectedItems);
   }; */
 
+
   const handleMoreSettings = (productId) => {
     // Handle more settings click event
     console.log(`More settings for product ID: ${productId}`);
   };
 
+
   const handleOpen = () => setOpen(true); // Function to open the modal
   const handleClose = () => setOpen(false); // Function to close the modal
+
 
   const handleProductAdded = () => {
     fetchProducts(); // Fetch the latest products after a new product is added
   };
 
+
   const handleOpenOrderModal = () => setOrderModalOpen(true);
   const handleCloseOrderModal = () => setOrderModalOpen(false);
-  
+ 
+  const clearSessionFromProduct = () => {
+    console.log("Clearing session from Product component");
+    //sessionStorage.clear();
+    setSelectedProducts([]);
+  };
 
 
   return (
@@ -159,17 +236,17 @@ const Product = () => {
       {/* Sidebar */}
       <Sidebar />
     <div className="product-container">
-      
+     
       {/* Top Bar */}
       <div className="product-header">
-        <input 
-          type="text" 
-          placeholder="Search" 
-          className="search-box" 
+        <input
+          type="text"
+          placeholder="Search"
+          className="search-box"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <select 
+        <select
           className="filter-dropdown"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -181,7 +258,7 @@ const Product = () => {
           <option value="Christmas Deco">Christmas Deco</option>
           <option value="Other Toys">Other Toys</option>
         </select>
-        <select 
+        <select
           className="filter-dropdown"
           value={selectedAgeGroup}
           onChange={(e) => setSelectedAgeGroup(e.target.value)}
@@ -194,12 +271,16 @@ const Product = () => {
         </select>
         <button className="export-btn">⬇ Export</button>
         <Button onClick={handleOpen} className="add-btn">+ Add New Product</Button> {/* Open modal on click */}
+        
+
 
         <button className="order-btn" onClick={handleOpenOrderModal} >
           📝 Set Order</button>
 
 
-         {/*  <div style={{ height: 500, width: "100%" }}> 
+
+
+         {/*  <div style={{ height: 500, width: "100%" }}>
           <DataGrid
           rows={products}
           columns={[
@@ -215,20 +296,25 @@ const Product = () => {
       </div> */}
 
 
+
+
         <OrderModal
           isOpen={orderModalOpen}
           onClose={handleCloseOrderModal}
           selectedProducts={selectedProducts}
           setSelectedProducts={setSelectedProducts}
+          setRowSelectionModel={setRowSelectionModel}
+         
+         
         />
-
-
       </div>
 
-      <ProductTable 
-      products={filteredProducts} 
+
+      <ProductTable
+      products={filteredProducts}
       handleMoreSettings={handleMoreSettings}
       onSelectionChange={setSelectedProducts} />
+
 
       {/* Modal for Add Product Form */}
       <Modal open={open} onClose={handleClose}>
@@ -240,6 +326,7 @@ const Product = () => {
     </div>
   );
 };
+
 
 // Modal styling
 const modalStyle = {
@@ -257,4 +344,9 @@ const modalStyle = {
 };
 
 
+
+
 export default Product;
+
+
+

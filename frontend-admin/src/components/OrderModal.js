@@ -1,15 +1,34 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import { Modal, Box, Button, TextField, IconButton, Autocomplete } from "@mui/material";
 import { FaTrash } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import InvoiceModal from "./InvoiceModal";
 import axios from "axios";
 
-const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) => {
+
+const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, setRowSelectionModel  }) => {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [quantities, setQuantities] = useState({}); // Local state for quantities
   const [errors, setErrors] = useState({}); // Local state for error messages
+  const [adminID, setAdminID] = useState(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null); 
+  
   const router = useRouter();
+
+  useEffect(() => {
+    // Fetch adminID from localStorage or sessionStorage
+    const storedAdminID = localStorage.getItem("adminID") || sessionStorage.getItem("adminID");
+    if (storedAdminID) {
+      setAdminID(storedAdminID);
+    } else {
+      console.error("Admin ID not found in storage");
+    }
+  }, []);
+
 
   useEffect(() => {
     axios.get("http://localhost:8081/api/customers")
@@ -17,38 +36,77 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       .catch(error => console.error("Error fetching customers:", error));
   }, []);
 
+
   useEffect(() => {
     if (selectedCustomer) {
       //console.log("Selected Customer:", selectedCustomer); // Debugging: Check selected customer details
-  
+ 
       // Update product prices based on customer type
-      const updatedProducts = selectedProducts.map((product) => {
-        console.log("Original Product:", product); // Debugging: Check original product details
-  
+      const updatedProducts = selectedProducts.map((product) => {  
         const price = (() => {
-          console.log("Customer Type:", selectedCustomer.cusType); // Debugging: Check customer type
-          console.log("Wholesale Price:", product.wholesalePrice); // Debugging: Check wholesale price
-          console.log("Retail Price:", product.retailPrice); // Debugging: Check retail price
-        
+         
           return selectedCustomer.cusType === "Wholesale"
             ? product.wholesalePrice
             : product.retailPrice;
         })();
-  
+ 
         console.log(
           `Customer Type: ${selectedCustomer.cusType}, Product ID: ${product.productID}, Price: ${price}`
         ); // Debugging: Check calculated price based on customer type
-  
+ 
         return {
           ...product,
           price, // Add or update the price field
         };
       });
-  
+ 
       //console.log("Updated Products:", updatedProducts); // Debugging: Check updated products with new prices
       setSelectedProducts(updatedProducts); // Update the selectedProducts state
     }
   }, [selectedCustomer]);
+
+
+  useEffect(() => {
+    if (isOpen) {
+      const savedCustomer = sessionStorage.getItem("selectedCustomer");
+      const savedProducts = sessionStorage.getItem("selectedProducts");
+      const savedQuantities = sessionStorage.getItem("quantities");
+ 
+      // Debugging: Log the retrieved data
+      console.log("Session Storage Data on Modal Open:", {
+        savedCustomer: savedCustomer ? JSON.parse(savedCustomer) : null,
+        savedProducts: savedProducts ? JSON.parse(savedProducts) : null,
+        savedQuantities: savedQuantities ? JSON.parse(savedQuantities) : null,
+      });
+ 
+      // Update state with retrieved data or reset if no data exists
+      setSelectedCustomer(savedCustomer ? JSON.parse(savedCustomer) : null);
+      setSelectedProducts(savedProducts ? JSON.parse(savedProducts) : []);
+      setQuantities(savedQuantities ? JSON.parse(savedQuantities) : {});
+    }
+  }, [isOpen]);
+
+
+  useEffect(() => {
+  if (isOpen) {
+    const returnToOrder = sessionStorage.getItem("returnToOrder");
+    if (returnToOrder) {
+      sessionStorage.removeItem("returnToOrder");
+      const savedCustomer = sessionStorage.getItem("selectedCustomer");
+      const savedProducts = sessionStorage.getItem("selectedProducts");
+      const savedQuantities = sessionStorage.getItem("quantities");
+
+
+      if (savedCustomer) setSelectedCustomer(JSON.parse(savedCustomer));
+      if (savedProducts) setSelectedProducts(JSON.parse(savedProducts));
+      if (savedQuantities) setQuantities(JSON.parse(savedQuantities));
+    }
+  }
+}, [isOpen]);
+
+
+ 
+
 
   const handleClose = () => {
     setSelectedCustomer(null); // Reset selected customer
@@ -57,10 +115,33 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
     onClose(); // Call the parent onClose function
   };
 
+
+  const handleAddNewProducts = () => {
+    // Save order details in sessionStorage
+    sessionStorage.setItem("selectedCustomer", JSON.stringify(selectedCustomer));
+    sessionStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
+    sessionStorage.setItem("quantities", JSON.stringify(quantities));
+ 
+    // Debugging: Log the data being saved
+    console.log("Saving to Session Storage:", {
+      selectedCustomer,
+      selectedProducts,
+      quantities,
+    });
+ 
+    // Close the modal
+    onClose();
+ 
+    // Redirect to the product page
+    router.push("/Product");
+  };
+
+
   // Handle Quantity Update
   const updateQuantity = (index, value) => {
     //console.log(`Updating quantity for index ${index} with value ${value}`);
     const product = selectedProducts[index];
+
 
     // Validate quantity
     if (value < 1) {
@@ -72,6 +153,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       return;
     }
 
+
     if (value > product.quantity) {
       console.log(`Stock validation failed for product ${product.productID}. Entered: ${value}, Available: ${product.stock}`);
       setErrors((prevErrors) => ({
@@ -81,6 +163,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       return;
     }
 
+
     // Clear error if validation passes
     setErrors((prevErrors) => {
       const updatedErrors = { ...prevErrors };
@@ -89,12 +172,14 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       return updatedErrors;
     });
 
+
     // Update the quantities state
     setQuantities((prevQuantities) => ({
       ...prevQuantities,
       [product.productID]: value,
     }));
   };
+
 
   // Remove Item
   const removeProduct = (index) => {
@@ -112,6 +197,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
     });
   };
 
+
   // Calculate Total Price
   const calculateTotal = () => {
     return selectedProducts.reduce((total, product) => {
@@ -121,22 +207,104 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
     }, 0).toFixed(2);
   };
 
+
   // Redirect to Customer Registration & Save State
   const navigateToCustomerPage = () => {
     sessionStorage.setItem("returnToOrder", "true");
     router.push("/Customer");
   };
 
-  // Handle Place Order
-  const placeOrder = () => {
+
+  // Clear Session Storage
+  const handleClearSession = () => {
+
+
+    // Generate a unique session ID
+  const sessionID = Date.now().toString();
+ 
+  // Clear all session storage
+  sessionStorage.clear();
+ 
+  // Set a new session ID to mark this as a fresh session
+  sessionStorage.setItem("sessionID", sessionID);
+ 
+  // Reset all local state variables
+  setSelectedCustomer(null);
+  setSelectedProducts([]);
+  setQuantities({});
+  setErrors({});
+ 
+  // Important: Also update the parent component's state
+  // This directly communicates to the parent component (Product page)
+  if (typeof setSelectedProducts === 'function') {
+    setSelectedProducts([]);
+  }
+ 
+  console.log("Session cleared with new ID:", sessionID);
+    alert("Session cleared successfully!");
+  
+    // Clear the selected rows in the DataGrid
+    if (typeof setRowSelectionModel === "function") {
+      setRowSelectionModel([]); // Reset the selection
+    }
+  };
+
+
+    /* // Set a special flag
+  sessionStorage.setItem("freshStart", "true");
+
+
+    sessionStorage.removeItem("selectedCustomer");
+    sessionStorage.removeItem("selectedProducts");
+    sessionStorage.removeItem("quantities");
+    sessionStorage.removeItem("returnToOrder");
+
+
+ 
+
+
+    // Reset local state
+    setSelectedCustomer(null);
+    setSelectedProducts([]);
+    setQuantities({});
+    setErrors({});
+
+
+    // Debugging: Log the cleared states
+  console.log("Session cleared. States reset:", {
+    selectedCustomer: null,
+    selectedProducts: [],
+    quantities: {},
+    errors: {},
+  });
+
+
+  console.log("Session Storage After Clearing:", {
+    selectedCustomer: sessionStorage.getItem("selectedCustomer"),
+    selectedProducts: sessionStorage.getItem("selectedProducts"),
+    quantities: sessionStorage.getItem("quantities"),
+  });
+
+
+    alert("Session cleared. Please select a customer and products again."); */
+  
+
+
+  const placeOrder = async () => {
     if (!selectedCustomer) {
       alert("Please select a customer");
+      return;
+    }
+  
+    if (!adminID) {
+      alert("Admin ID is missing. Please log in again.");
       return;
     }
   
     // Prepare the order data
     const orderData = {
       cusID: selectedCustomer.cusID, // Use cusID from the selected customer
+      adminID,
       products: selectedProducts.map((product) => ({
         productID: product.productID,
         quantity: quantities[product.productID] || 0,
@@ -145,85 +313,118 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts }) 
       totalPrice: calculateTotal(), // Calculate the total price
     };
   
-    // Send the order data to the backend
-    axios
-      .post("http://localhost:8081/api/orders", orderData)
-      .then(() => {
-        alert("Order placed successfully!");
-        onClose(); // Close the modal after placing the order
-      })
-      .catch((error) => {
-        console.error("Error placing order:", error.response?.data || error.message);
-        alert("Failed to place order.");
-      });
+    try {
+      // Send the order data to the backend
+      const response = await axios.post("http://localhost:8081/api/orders", orderData);
+      alert("Order placed successfully!");
+  
+      // Fetch the order details for the invoice
+      const orderResponse = await axios.get(`http://localhost:8081/api/orders/${response.data.orderID}`);
+      setOrderDetails(orderResponse.data); // Set the order details for the invoice
+      console.log("Order Response:", orderResponse.data);
+      setInvoiceModalOpen(true); // Open the InvoiceModal
+
+      // Ensure orderDetails is set before opening the modal
+    if (orderResponse.data && orderResponse.data.order && orderResponse.data.items) {
+      setInvoiceModalOpen(true); // Open the InvoiceModal
+    } else {
+      console.error("Order details are incomplete:", orderResponse.data);
+    }
+
+    // Clear session storage after successful order placement
+    sessionStorage.clear();
+    console.log("Session storage cleared after order placement.");
+
+    // Reset local state
+    setSelectedCustomer(null);
+    setSelectedProducts([]);
+    setQuantities({});
+    setErrors({});
+
+    onClose(); // Close the OrderModal
+      if (typeof setRowSelectionModel === "function") {
+        setRowSelectionModel([]); // Reset the selection
+      }
+    } catch (error) {
+      console.error("Error placing order:", error.response?.data || error.message);
+      alert("Failed to place order.");
+    }
   };
 
-  
+
+
+
+
+
   return (
+    <>
     <Modal open={isOpen} onClose={handleClose}>
       <Box sx={{ ...modalStyle }}>
         <h2>My Order</h2>
 
+
               {/* Customer Search */}
-        <Autocomplete
-        options={customers}
-        getOptionLabel={(customer) => `${customer.name} (ID: ${customer.cusID})`}
-        onChange={(event, newValue) => {
-          //console.log("Customer Selected:", newValue); // Debugging: Check selected customer
-          setSelectedCustomer(newValue);
-        }}
-        renderInput={(params) => <TextField {...params} label="Select Customer" />}
-      />
+              <Autocomplete
+                options={customers}
+                getOptionLabel={(customer) => `${customer.name} (ID: ${customer.cusID})`}
+                value={selectedCustomer} // Bind the value to the selectedCustomer state
+                onChange={(event, newValue) => {
+                  console.log("Customer Selected:", newValue); // Debugging: Check selected customer
+                  setSelectedCustomer(newValue);
+                }}
+                renderInput={(params) => <TextField {...params} label="Select Customer" />}
+              />
         <Button variant="contained" onClick={navigateToCustomerPage}>+ New Customer</Button>
 
-        {selectedProducts.map((product, index) => (
-          <div key={product.productID} className="order-item">
-            <p>{product.name}</p>
-            <TextField
-              type="number"
-              placeholder="Enter quantity"
-              value={quantities[product.productID] || ""}
-              onChange={(e) => {
-                const value = e.target.value;
 
-                // Allow empty field while typing
-                if (value === "") {
-                  setQuantities((prev) => ({
-                    ...prev,
-                    [product.productID]: "",
-                  }));
-                  setErrors((prevErrors) => ({
-                    ...prevErrors,
-                    [product.productID]: "Quantity is required.",
-                  }));
-                  return;
-                }
+        {selectedProducts.map((product, index) => {
+  console.log("Rendering Product:", product);
+  return (
+    <div key={product.productID} className="order-item">
+      <p>{product.name}</p>
+      <TextField
+        type="number"
+        placeholder="Enter quantity"
+        value={quantities[product.productID] || ""}
+        onChange={(e) => {
+          const value = parseInt(e.target.value) || 0;
+          updateQuantity(index, value);
+        }}
+        error={!!errors[product.productID]}
+        helperText={errors[product.productID] || ""}
+      />
+      <span>
+        Rs.{" "}
+        {(
+          (quantities[product.productID] || 0) *
+          (product.price || 0)
+        ).toFixed(2)}
+      </span>
+      <IconButton onClick={() => removeProduct(index)}>
+        <FaTrash />
+      </IconButton>
+    </div>
+  );
+})}
 
-                const parsedValue = parseInt(value);
-
-                // Update immediately on every change
-                updateQuantity(index, parsedValue);
-              }}
-              error={!!errors[product.productID]} // Highlight textbox if there's an error
-              helperText={errors[product.productID] || ""} // Display error message below the textbox
-            />
-            <span>
-              Rs.{" "}
-              {(
-                (quantities[product.productID] || 0) *
-                (product.price || 0) // Use the updated price field
-              ).toFixed(2)}
-            </span>
-            <IconButton onClick={() => removeProduct(index)}><FaTrash /></IconButton>
-          </div>
-        ))}
 
         <h3>Total: Rs.{calculateTotal()}</h3>
         <Button variant="contained" color="primary" onClick={placeOrder}>Place Order</Button>
+        <Button variant="outlined" onClick={handleAddNewProducts}>Add New Products</Button>
+        <Button variant="outlined" onClick={handleClearSession}>clear session</Button>
       </Box>
     </Modal>
+
+    <InvoiceModal
+      isOpen={invoiceModalOpen}
+      onClose={() => setInvoiceModalOpen(false)}
+      orderDetails={orderDetails}
+     
+      />
+      </>
   );
 };
+
 
 // Modal Styling
 const modalStyle = {
@@ -237,4 +438,8 @@ const modalStyle = {
   p: 4,
 };
 
+
 export default OrderModal;
+
+
+
