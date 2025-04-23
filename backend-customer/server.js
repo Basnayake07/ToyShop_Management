@@ -1,15 +1,23 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import customerAuthRoutes from './routes/customerAuthRoutes.js'; // Import the customer auth routes
-import pool from './config/db.js'; // Ensure the database connection is imported
+import customerAuthRoutes from './routes/customerAuthRoutes.js'; 
+import pool from './config/db.js'; 
 
 dotenv.config();
 
-const app = express();
+const app = express(); // Initialize the app here
+
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:3000", // Change this to match your frontend URL
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Fix capitalization of "Credentials" to "credentials"
+};
+app.use(cors(corsOptions)); // Use CORS after initializing the app
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Test database connection
