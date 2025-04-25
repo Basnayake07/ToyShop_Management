@@ -1,0 +1,178 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0px;
+  background-color: #f8f8f8; /* App bar color */
+  color: white;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  flex: 1; /* Allow the logo to take up space */
+}
+
+.toyland-logo {
+  margin-left: 15%;
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+.menu-icon {
+  display: none;
+  color: black;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.menu-icon-auth {
+  display: none;
+  color: black;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 20px;
+  flex: 1; /* Allow the nav links to take up space */
+  justify-content: space-around;
+  transition: all 0.3s ease-in-out;
+  
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #000;
+  font-weight: bold;
+  font-size: medium;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #0A2F6E; /* Highlight color on hover */
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1; 
+  justify-content: flex-end;
+  margin-right: 50px;
+}
+
+.search-bar {
+  background-color: white;
+  border-radius: 4px;
+  width: 250px;
+}
+
+.icon-button {
+  color: white;
+  padding-right: 50px;
+  font-size: 24px;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 810px) {
+  .menu-icon {
+    display: block;
+    position: absolute;
+    right: 20px; /* Adjust spacing from right edge */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+  }
+
+  .menu-icon-auth {
+    display: block;
+    position: absolute;
+    right: 30px; /* Adjust spacing from right edge */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+  }
+
+  .header-nav {
+    display: none; /* Hide navigation links by default */
+    flex-direction: column;
+    gap: 10px;
+    background-color: #f8f8f8;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .header-nav.open {
+    display: flex; /* Show navigation links when menu is open */
+  }
+
+  .header-actions {
+    position: absolute;
+    right: 50px; /* Space for menu icon */
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .search-bar {
+    width: 100%; /* Full width for smaller screens */
+  }
+
+  .header {
+    position: relative; /* Change from fixed/sticky */
+    padding: 10px;
+    align-items: center;
+  }
+
+  .header-logo {
+    flex: none; /* Reset flex property */
+    margin-right: auto; /* Push logo to the left */
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-link {
+    font-size: small; /* Reduce font size for smaller screens */
+  }
+
+  .icon-button {
+    font-size: small; /* Adjust icon size */
+    padding-right: 30px
+  }
+
+  .logo-smart-kade {
+    margin-left: 0%;
+    width: 180px;
+  }
+
+  .header-actions {
+    right: 40px; /* Adjust for smaller screens */
+    margin-right: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+
+  .logo-smart-kade {
+    margin-left: 0%;
+    width: 150px;
+  }
+
+  .icon-button {
+    padding-right: 20px;
+  }
+}

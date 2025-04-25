@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import customerAuthRoutes from './routes/customerAuthRoutes.js'; 
-import pool from './config/db.js'; 
+import customerProductRoutes from './routes/customerProductRoutes.js';
+import db from './config/db.js'; // Import the database connection pool as db
+import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
 
@@ -13,17 +15,30 @@ const corsOptions = {
   origin: "http://localhost:3000", // Change this to match your frontend URL
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // Fix capitalization of "Credentials" to "credentials"
+  credentials: true,
 };
 app.use(cors(corsOptions)); // Use CORS after initializing the app
 
 // Middleware
 app.use(express.json());
 
+// Middleware to attach database connection
+app.use((req, res, next) => {
+  req.db = db; // Attach MySQL connection pool to req.db
+  console.log("Database connection status:", req.db ? "Connected" : "Not Connected");
+  next();
+});
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Test database connection
 (async () => {
   try {
-    const connection = await pool.getConnection();
+    const connection = await db.getConnection(); // Use db instead of pool
     console.log('Connected to MySQL');
     connection.release();
   } catch (error) {
@@ -32,7 +47,11 @@ app.use(express.json());
 })();
 
 // Routes
-app.use('/api/customers', customerAuthRoutes); // Use the customer auth routes
+// Use the customer auth routes
+app.use('/api/customers', customerAuthRoutes); 
+
+// Use the customer product routes
+app.use('/api', customerProductRoutes);
 
 // Default route
 app.get('/', (req, res) => {
@@ -45,3 +64,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+export default cloudinary;
