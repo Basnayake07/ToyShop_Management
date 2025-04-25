@@ -6,7 +6,8 @@ import Image from "next/image";
 import Carousel from '@/components/Carousel';
 import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
-import { getProductCards } from '@/services/productService';
+import axios from 'axios';
+// import { getProductCards } from '@/services/productService';
 import Birthday_Decoration from '@/images/BirthdayDecoration.jpg'; 
 import Educational_Toys from '@/images/EducationalToys.jpg';
 import Soft_Toys from '@/images/SoftToys.jpg';
@@ -29,6 +30,16 @@ const HomePage = () => {
     '/images/carousel4.jpg',
   ];
 
+  const fetchProducts = async () => {
+    const API_BASE_URL = 'http://localhost:8082/api'; // Backend API URL
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products`);
+      setProducts(response.data); // Set the fetched products in state
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   useEffect(() => {
     AOS.init({
       duration: 1000,  // Slow animation 
@@ -50,13 +61,18 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const productData = await getProductCards();
-      setProducts(productData);
-    };
-
-    fetchProducts();
+    fetchProducts(); // Fetch products when the component mounts
   }, []);
+
+
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     const productData = await getProductCards();
+  //     setProducts(productData);
+  //   };
+
+  //   fetchProducts();
+  // }, []);
 
   const handleViewMore = () => {
     setVisibleProducts((prevVisible) => prevVisible + 4); // Show 4 more products
