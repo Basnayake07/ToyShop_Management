@@ -73,7 +73,7 @@ export const Header = ({ isHomePage = false }) => {
 
       {/* Navigation Links */}
       <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
-        <Link href="/" className="nav-link">Home</Link>
+        <Link href="/HomePage" className="nav-link">Home</Link>
         <Link href="/Contact" className="nav-link">Contact Us</Link>
         <Link href="/AboutUs" className="nav-link">About Us</Link>
         {isLoggedIn ? (

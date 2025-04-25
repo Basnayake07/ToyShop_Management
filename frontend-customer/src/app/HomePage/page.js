@@ -113,7 +113,7 @@ const HomePage = () => {
               <Image 
                 src={footerTop} 
                 alt="footerTop"
-                style={{display:'flex', width:'80%', height:'auto', marginTop:'20px'}} />
+                style={{display:'flex', width:'90%', height:'50%', marginTop:'20px'}} />
             </center>
           </div>  
           
