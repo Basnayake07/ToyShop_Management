@@ -115,7 +115,7 @@ const HomePage = () => {
           </div>
 
           <div className='category-grid' data-aos="fade-up">                  
-            <CategoryCard key="Birthday Deco" icon={Birthday_Decoration} title="Birthday Decoration" />
+            <CategoryCard key="Birthday Deco" icon={Birthday_Decoration} title="Birthday Deco" />
             <CategoryCard key="Educational Toys" icon={Educational_Toys} title="Educational Toys" />
             <CategoryCard key="Soft Toys" icon={Soft_Toys} title="Soft Toys" />
             <CategoryCard key="Christmas Decoration" icon={Christmas_Decoration} title="Christmas Decoration" />
