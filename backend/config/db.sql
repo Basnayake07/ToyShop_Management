@@ -85,29 +85,9 @@ CREATE TABLE order_items (
     FOREIGN KEY (productID) REFERENCES products(productID)
 );
 
-CREATE TABLE supplier (
-  suppID VARCHAR(6) PRIMARY KEY,
-  name VARCHAR(50) NOT NULL,
-  email VARCHAR(50) NOT NULL,
-  password VARCHAR(100) NOT NULL
-);
 
-CREATE TABLE supp_phone (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  suppID VARCHAR(6),
-  phoneNumber VARCHAR(15),
-  FOREIGN KEY (suppID) REFERENCES supplier(suppID)
-);
 
-CREATE TABLE purchaseOrder (
-    purchaseID VARCHAR(6) PRIMARY KEY ,
-    suppID VARCHAR(6) NOT NULL,
-    purchaseDate DATE NOT NULL,
-    total DECIMAL(10,2) NOT NULL,
-    comments TEXT NULL,
-    status ENUM ('Pending', 'Received', 'Cancelled'),
-    FOREIGN KEY (suppID) REFERENCES supplier(suppID)
-);
+
 
 CREATE TABLE purchaseOrderItem (
     purchaseItem INT  AUTO_INCREMENT,

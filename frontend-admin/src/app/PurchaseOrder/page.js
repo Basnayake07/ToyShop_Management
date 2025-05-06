@@ -13,6 +13,10 @@ const PurchaseOrderDetails = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [feedback, setFeedback] = useState(""); // Feedback state
+  const [openModal, setOpenModal] = useState(false);
+  const [showFeedbackField, setShowFeedbackField] = useState(false);
 
   const fetchPurchaseOrders = async () => {
     try {
@@ -53,8 +57,7 @@ const PurchaseOrderDetails = () => {
     }
   };
 
-  const [selectedOrder, setSelectedOrder] = useState(null);
-const [openModal, setOpenModal] = useState(false);
+
 
 const handleRowClick = async (purchaseID) => {
     try {
@@ -64,6 +67,23 @@ const handleRowClick = async (purchaseID) => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
       alert("Failed to fetch purchase order details.");
+    }
+  };
+
+  const handleFeedbackUpdate = async () => {
+    try {
+      await axios.put(
+        `http://localhost:8081/api/purchase-orders/${selectedOrder.purchaseID}/feedback`,
+        {
+          feedback,
+        }
+      );
+      alert("Feedback updated successfully!");
+      fetchPurchaseOrders(); // Refresh the table
+      setShowFeedbackField(false); // Hide feedback field
+    } catch (error) {
+      console.error("Error updating feedback:", error);
+      alert("Failed to update feedback.");
     }
   };
 
@@ -119,6 +139,26 @@ const handleRowClick = async (purchaseID) => {
           </Tooltip>
         ),
       },
+      {
+        field: "feedback",
+        headerName: "Feedback",
+        width: 200,
+        renderCell: (params) => (
+          <Tooltip title={params.value || "No feedback"} arrow>
+            <span
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "block",
+                maxWidth: "100%",
+              }}
+            >
+              {params.value || "No feedback"}
+            </span>
+          </Tooltip>
+        ),
+      },
   ];
 
   return (
@@ -155,17 +195,17 @@ const handleRowClick = async (purchaseID) => {
         </Paper>
 
         <Modal open={openModal} onClose={() => setOpenModal(false)}>
-  <Box 
-    sx={{ 
-      p: 4, 
-      backgroundColor: "white", 
-      maxWidth: 600, 
-      margin: "100px auto", 
-      borderRadius: 2, 
-      boxShadow: 3,
-      position: "relative"
-    }}
-  >
+          <Box 
+            sx={{ 
+              p: 4, 
+              backgroundColor: "white", 
+              maxWidth: 600, 
+              margin: "100px auto", 
+              borderRadius: 2, 
+              boxShadow: 3,
+              position: "relative"
+            }}
+          >
     {selectedOrder ? (
       <>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -237,12 +277,52 @@ const handleRowClick = async (purchaseID) => {
             </TableBody>
           </Table>
         </TableContainer>
+
+
+        
         
         {/* Footer with Total */}
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
           <Typography variant="h6">Total</Typography>
           <Typography variant="h6" fontWeight="bold">Rs. {selectedOrder.total}</Typography>
         </Box>
+
+         {/* Feedback Section */}
+         {showFeedbackField ? (
+          <>
+            <TextField
+              label="Add Feedback"
+              variant="outlined"
+              fullWidth
+              multiline
+              rows={3}
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              sx={{ mb: 3 }}
+            />
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+              <Button variant="outlined" onClick={() => setShowFeedbackField(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleFeedbackUpdate}
+              >
+                Save Feedback
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setShowFeedbackField(true)}
+            sx={{ mt: 2 }}
+          >
+            Add Feedback
+          </Button>
+        )}
         
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
           <Button variant="outlined" onClick={() => setOpenModal(false)}>
@@ -252,6 +332,8 @@ const handleRowClick = async (purchaseID) => {
             Print Order
           </Button>
         </Box>
+
+
       </>
     ) : (
       <Typography>No order selected</Typography>

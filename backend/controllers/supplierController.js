@@ -170,7 +170,7 @@ export const supplierController = {
   getAllPurchaseOrders: async (req, res) => {
     try {
       const query = `
-        SELECT po.purchaseID, po.purchaseDate AS orderDate, po.total, po.status, po.comments,
+        SELECT po.purchaseID, po.purchaseDate AS orderDate, po.total, po.status, po.comments, po.feedback,
                s.suppID, s.name AS supplierName
         FROM purchaseOrder po
         LEFT JOIN supplier s ON po.suppID = s.suppID
@@ -230,4 +230,24 @@ export const supplierController = {
       res.status(500).json({ message: "Error fetching purchase order details", error });
     }
   },
+
+  // Update purchase order status
+
+    updatePurchaseOrderFeedback: async (req, res) => {
+      const { purchaseID } = req.params;
+      const { feedback } = req.body;
+
+      try {
+        const query = `
+          UPDATE purchaseOrder
+          SET feedback = ?
+          WHERE purchaseID = ?
+        `;
+        await req.db.execute(query, [feedback, purchaseID]);
+        res.status(200).json({ message: "Feedback updated successfully" });
+      } catch (error) {
+        console.error("Error updating feedback:", error);
+        res.status(500).json({ message: "Error updating feedback", error });
+      }
+    }
 };

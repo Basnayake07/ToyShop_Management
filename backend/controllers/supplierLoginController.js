@@ -53,7 +53,7 @@ export const loginSupplier = async (req, res) => {
   
     try {
       const query = `
-        SELECT po.purchaseID, po.purchaseDate, po.total, po.status, po.comments
+        SELECT po.purchaseID, po.purchaseDate, po.total, po.status, po.comments, po.feedback, po.suppID
         FROM purchaseOrder po
         WHERE po.suppID = ?
       `;

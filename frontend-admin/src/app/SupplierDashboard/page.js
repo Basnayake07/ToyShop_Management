@@ -76,6 +76,7 @@ const SupplierDashboard = () => {
             <TableCell>Total</TableCell>
             <TableCell>Status</TableCell>
             <TableCell>Comments</TableCell>
+            <TableCell>Feedback</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -103,6 +104,10 @@ const SupplierDashboard = () => {
                   fullWidth
                 />
               </TableCell>
+              <TableCell>
+                <span>{order.feedback || "No feedback"}</span> {/* Read-only Feedback */}
+              </TableCell>
+
               <TableCell>
                 <Button variant="contained" color="primary" onClick={() => handleSave(order.purchaseID)}>
                   Save

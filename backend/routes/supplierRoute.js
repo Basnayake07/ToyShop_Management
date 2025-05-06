@@ -18,4 +18,7 @@ router.get("/purchase-orders", supplierController.getAllPurchaseOrders);
 // Route to get detailed purchase order information
 router.get("/purchase-orders/details/:purchaseID", supplierController.getPurchaseOrderDetails);
 
+// Update feedback for a purchase order
+router.put("/purchase-orders/:purchaseID/feedback", supplierController.updatePurchaseOrderFeedback);
+
 export default router;
