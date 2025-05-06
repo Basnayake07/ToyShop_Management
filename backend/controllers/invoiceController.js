@@ -106,4 +106,93 @@ export const invoiceController = {
       res.status(500).json({ message: "Error fetching invoice details", error });
     }
   },
+
+  // Fetch all invoices
+getAllInvoices: async (req, res) => {
+  try {
+    const query = `
+      SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount, i.discount,
+             o.totalPrice, o.payStatus, c.name AS customerName, c.email AS customerEmail
+      FROM invoice i
+      LEFT JOIN orders o ON i.orderID = o.orderID
+      LEFT JOIN customer c ON o.cusID = c.cusID
+    `;
+    const [invoices] = await req.db.execute(query);
+
+    res.status(200).json(invoices);
+  } catch (error) {
+    console.error("Error fetching all invoices:", error);
+    res.status(500).json({ message: "Error fetching all invoices", error });
+  }
+},
+
+  // Update invoice payment status
+updateInvoicePayment: async (req, res) => {
+  const { invoiceID } = req.params;
+  const { additionalPayment } = req.body;
+
+  try {
+    // Fetch the current invoice details
+    const invoiceQuery = `
+      SELECT received_amount, credit_amount, orderID
+      FROM invoice
+      WHERE invoiceID = ?
+    `;
+    const [invoiceDetails] = await req.db.execute(invoiceQuery, [invoiceID]);
+
+    if (invoiceDetails.length === 0) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    const { received_amount, credit_amount, orderID } = invoiceDetails[0];
+
+    const currentReceivedAmount = parseFloat(received_amount || 0);
+    const currentCreditAmount = parseFloat(credit_amount || 0);
+    const additionalPaymentAmount = parseFloat(additionalPayment || 0);
+
+    let newReceivedAmount, newCreditAmount, change = 0;
+
+    if (additionalPaymentAmount >= currentCreditAmount) {
+      // Overpayment scenario
+      newReceivedAmount = currentReceivedAmount + currentCreditAmount;
+      newCreditAmount = 0;
+      change = additionalPaymentAmount - currentCreditAmount;
+    } else {
+      // Normal partial payment
+      newReceivedAmount = currentReceivedAmount + additionalPaymentAmount;
+      newCreditAmount = currentCreditAmount - additionalPaymentAmount;
+    }
+
+    // Update the invoice
+    const updateInvoiceQuery = `
+      UPDATE invoice
+      SET received_amount = ?, credit_amount = ?, issue_date = NOW()
+      WHERE invoiceID = ?
+    `;
+    await req.db.execute(updateInvoiceQuery, [newReceivedAmount, newCreditAmount, invoiceID]);
+
+    // Update the order's payment status if fully paid
+    if (newCreditAmount === 0) {
+      const updateOrderQuery = `
+        UPDATE orders
+        SET payStatus = 'Paid'
+        WHERE orderID = ?
+      `;
+      await req.db.execute(updateOrderQuery, [orderID]);
+    }
+
+    res.status(200).json({ 
+      message: "Invoice payment updated successfully",
+      received_amount: newReceivedAmount,
+      credit_amount: newCreditAmount,
+      change
+    });
+  } catch (error) {
+    console.error("Error updating invoice payment:", error);
+    res.status(500).json({ message: "Error updating invoice payment", error });
+  }
+}
+
+
 };
+

@@ -107,7 +107,7 @@ const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
 
 
   return (
-    <Paper sx={{ height: 500, width: "100%" }}>
+    <Paper sx={{ height: 700, width: "100%" }}>
       <DataGrid
         rows={products}
         columns={columns}

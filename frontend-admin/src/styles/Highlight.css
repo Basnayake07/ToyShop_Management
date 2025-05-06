@@ -1,0 +1,7 @@
+.highlight-cell {
+    background-color: #f63a40; /* Light yellow background */
+    color: hsl(0, 0%, 4%); /* Dark yellow text */
+    font-weight: bold;
+    padding: 4px;
+    border-radius: 4px;
+  }
