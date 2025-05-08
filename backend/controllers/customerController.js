@@ -177,4 +177,27 @@ export const updateCustomer = async (req, res) => {
       console.error("Error:", error);
       return res.status(500).json({ message: "Server error", error: error.message });
     }
+
+    
   };
+
+  export const getCustomerByName = async (req, res) => {
+    const { name } = req.query;
+  
+    try {
+      const [customer] = await db.execute(
+        `SELECT cusID FROM customer WHERE name = ?`,
+        [name]
+      );
+  
+      if (customer.length === 0) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+  
+      res.status(200).json(customer[0]);
+    } catch (error) {
+      console.error("Error fetching customer details:", error);
+      res.status(500).json({ message: "Error fetching customer details", error });
+    }
+  };
+
