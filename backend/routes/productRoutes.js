@@ -12,6 +12,7 @@ const router = express.Router();
 // Product routes
 router.post('/products', upload.single('image'), productController.createProduct);
 router.get('/products', productController.getAllProducts);
+router.get('/products/:productID', productController.getProductById);
 
 // You can add other routes like GET, PUT, DELETE for products here
 

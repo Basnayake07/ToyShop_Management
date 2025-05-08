@@ -72,5 +72,27 @@ getAllProducts: async (req, res) => {
         console.error("Error fetching products with inventory details:", error);
         res.status(500).json({ message: "Error fetching products", error });
     }
-} };
-// Fetch product by I      
+} ,
+
+getProductById: async (req, res) => {
+    const { productID } = req.params;
+  
+    try {
+      const [product] = await req.db.execute(
+        `SELECT productID, name FROM product WHERE productID = ?`,
+        [productID]
+      );
+  
+      if (product.length === 0) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+  
+      res.status(200).json(product[0]);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      res.status(500).json({ message: "Error fetching product details", error });
+    }
+  }
+};
+
+
