@@ -112,23 +112,19 @@ const Dashboard = () => {
                     <div className="cards-section">
                         <Box sx={{ flexGrow: 1 }}>
                         <Grid container spacing={2}>
-                        {cardDetails.map((detail, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                                <div 
-                                    className="card" 
-                                    style={{ '--card-color': detail.color }}
+                            {cardDetails.map((detail, index) => (
+                                <Grid item xs={12} sm={6} md={4} key={index}>
+                                <CardComponent
+                                    title={detail.title}
+                                    value={detail.value}
+                                    description={detail.description}
+                                    icon={detail.icon}
+                                    color={detail.color}
                                     onClick={detail.onClick}
-                                >
-                                    <div className="card-icon" style={{ backgroundColor: detail.color }}>
-                                        {detail.icon}
-                                    </div>
-                                    <div className="card-title">{detail.title}</div>
-                                    <div className="card-value">{detail.value}</div>
-                                    <div className="card-description">{detail.description}</div>
-                                </div>
-                            </Grid>
-                        ))}
-                        </Grid>
+                                />
+                                </Grid>
+                            ))}
+                            </Grid> 
                         </Box>
                     </div>
                     
