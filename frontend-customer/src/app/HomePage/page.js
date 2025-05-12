@@ -40,6 +40,14 @@ const HomePage = () => {
     }
   };
 
+  const categories = [
+  { key: "Birthday Deco", icon: Birthday_Decoration, title: "Birthday Deco" },
+  { key: "Educational Toys", icon: Educational_Toys, title: "Educational Toys" },
+  { key: "Soft Toys", icon: Soft_Toys, title: "Soft Toys" },
+  { key: "Christmas Decoration", icon: Christmas_Decoration, title: "Christmas Decoration" },
+  { key: "Other Toys", icon: Other_Toys, title: "Other Toys" },
+];
+
   useEffect(() => {
     AOS.init({
       duration: 1000,  // Slow animation 
@@ -86,9 +94,16 @@ const HomePage = () => {
           <Carousel images={images} autoplay={true} interval={8000} showDots={true} />
 
           <div className="product-grid">
-            {products.slice(0, visibleProducts).map((product) => (
-              <ProductCard key={product.productId} product={product} data-aos="fade-up" />
-            ))}
+            {products.slice(0, visibleProducts).map((product) => {
+              console.log("Product ID:", product.productID || product.id);
+              return (
+                <ProductCard
+                  key={product.productID || product.id} // Use the correct field name
+                  product={product}
+                  data-aos="fade-up"
+                />
+              );
+            })}
           </div>
 
           {visibleProducts < products.length && (
@@ -114,12 +129,10 @@ const HomePage = () => {
             <h1 data-aos="zoom-up">Browse By Category</h1>
           </div>
 
-          <div className='category-grid' data-aos="fade-up">                  
-            <CategoryCard key="Birthday Deco" icon={Birthday_Decoration} title="Birthday Deco" />
-            <CategoryCard key="Educational Toys" icon={Educational_Toys} title="Educational Toys" />
-            <CategoryCard key="Soft Toys" icon={Soft_Toys} title="Soft Toys" />
-            <CategoryCard key="Christmas Decoration" icon={Christmas_Decoration} title="Christmas Decoration" />
-            <CategoryCard key="Other Toys" icon={Other_Toys} title="Other Toys" />
+          <div className='category-grid' data-aos="fade-up">
+            {categories.map((cat) => (
+              <CategoryCard key={cat.key} icon={cat.icon} title={cat.title} />
+            ))}
           </div>
 
           <Divider variant="middle" />

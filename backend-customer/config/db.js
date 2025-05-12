@@ -36,4 +36,5 @@ const pool = mysql.createPool({
 })();
 
   //module.exports = db;
-  export default pool;
+  
+export default pool;

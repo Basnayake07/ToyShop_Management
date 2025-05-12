@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import customerAuthRoutes from './routes/customerAuthRoutes.js'; 
 import customerProductRoutes from './routes/customerProductRoutes.js';
-import db from './config/db.js'; // Import the database connection pool as db
+import wishListsRoutes from './routes/wishListsRouter.js';
+import db from './config/db.js'; 
 import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
@@ -57,6 +58,9 @@ app.use('/api', customerProductRoutes);
 app.get('/', (req, res) => {
   res.send('Customer Backend API is running...');
 });
+
+// Use the wishlist routes
+app.use('/api/wishlist', wishListsRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8082;
