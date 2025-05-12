@@ -84,7 +84,7 @@ export const clearWishlist = async (req, res) => {
 
   try {
     const query = `DELETE FROM wishlist WHERE cusID = ?`;
-    await pool.promise().query(query, [cusID]);
+    await pool.query(query, [cusID]);
 
     res.status(200).json({ message: 'Wishlist cleared successfully' });
   } catch (error) {

@@ -8,9 +8,17 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import StarRating from '@/components/StarRating';
 import ConfirmationDialog from '@/components/ConfirmationDialog';
+import { useCustomer } from '@/contexts/customerContext';
 import '@/styles/WishlistItem.css';
 
-// Helper function to convert Google Drive URL to direct image link
+
+const WishlistItem = ({ item, onRemove }) => {
+  const { cusType } = useCustomer();
+  const { id, productID, image, name, retailPrice, wholesalePrice, rating, availability = 'In Stock' } = item;
+  const { addToCart } = useCart();
+  const [openDialog, setOpenDialog] = useState(false);
+
+  // Helper function to convert Google Drive URL to direct image link
 const getDirectImageUrl = (url) => {
   if (url.includes('drive.google.com')) {
     const fileId = url.split('/d/')[1]?.split('/')[0];
@@ -20,10 +28,9 @@ const getDirectImageUrl = (url) => {
   return url;
 };
 
-const WishlistItem = ({ item, onRemove }) => {
-  const { id, productID, image, name, retailPrice, wholesalePrice, rating, availability = 'In Stock' } = item;
-  const { addToCart } = useCart();
-  const [openDialog, setOpenDialog] = useState(false);
+  // Determine the price based on cusType
+  const price = cusType === 'wholesale' ? wholesalePrice : retailPrice;
+  const formattedPrice = !isNaN(price) ? parseFloat(price).toFixed(2) : 'N/A';
 
   const API_BASE_URL = 'http://localhost:8082/api/wishlist';
 
