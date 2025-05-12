@@ -13,11 +13,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import AddProductForm from "@/components/AddProductForm";
 import Sidebar from "@/components/Sidebar";
 import OrderModal from "@/components/OrderModal";
-//import { useCart } from "@/components/CartContext";
- // Import OrderModal component
 
-
-// ProductTable Component
 
 
 const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
@@ -270,7 +266,7 @@ useEffect(() => {
           <option value="12+ years">12+ years</option>
         </select>
         <button className="export-btn">⬇ Export</button>
-        <Button onClick={handleOpen} className="add-btn">+ Add New Product</Button> {/* Open modal on click */}
+        <Button onClick={handleOpen} className="add-btn">+ Add New Product</Button> 
         
 
 

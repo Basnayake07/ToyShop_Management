@@ -6,6 +6,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Paper, Modal, Box, Button, Typography, TextField } from "@mui/material";
 import { Grid, Table, TableContainer, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import "@/styles/Highlight.css";
 import axios from "axios";
 import Sidebar from "@/components/Sidebar";
 
@@ -22,7 +23,20 @@ const OrdersTable = ({ orders, onRowClick }) => {
       ),
     },
     { field: "totalPrice", headerName: "Total Price (Rs.)", width: 120 },
-    { field: "payStatus", headerName: "Payment Status", width: 150 },
+    {
+      field: "payStatus",
+      headerName: "Payment Status",
+      width: 150,
+      renderCell: (params) => (
+        <span
+          className={
+            params.value === "Partially Paid" ? "highlight-cell" : ""
+          }
+        >
+          {params.value}
+        </span>
+      ),
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -40,7 +54,7 @@ const OrdersTable = ({ orders, onRowClick }) => {
   ];
 
   return (
-    <Paper sx={{ height: 500, width: "100%" }}>
+    <Paper sx={{ height: 700, width: "80%" }}>
       <DataGrid
         rows={orders}
         columns={columns}
