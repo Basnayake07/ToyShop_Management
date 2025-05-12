@@ -1,0 +1,31 @@
+.stars-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+}
+
+.star {
+  font-size: 16px;
+}
+
+.star.filled {
+  color: #ffc107; /* Gold for filled stars */
+}
+
+.star.half-filled {
+  position: relative;
+  color: #e0e0e0; /* Gray for empty part */
+}
+
+.star.half-filled::before {
+  content: "★";
+  position: absolute;
+  color: #ffc107; /* Gold for filled part */
+  width: 50%;
+  overflow: hidden;
+}
+
+.star.empty {
+  color: #e0e0e0; /* Gray for empty stars */
+}
