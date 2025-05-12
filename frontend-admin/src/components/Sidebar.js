@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Typography } from "@mui/material";
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Divider, Toolbar, Typography, Box, Button } from "@mui/material";
 import { FaBox, FaClipboardList, FaUsers, FaFileInvoice, FaUserTie, FaChartBar, FaUsersCog } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const drawerWidth = 240;
 
@@ -12,15 +13,22 @@ const NAVIGATION_ITEMS = [
   { title: "Product", icon: <FaClipboardList />, path: "/Product" },
   { title: "Orders", icon: <FaClipboardList />, path: "/Orders" },
   { title: "Inventory", icon: <FaClipboardList />, path: "/Inventory" },
-  { title: "Invoices", icon: <FaFileInvoice />, path: "/invoices" },
+  { title: "Invoices", icon: <FaFileInvoice />, path: "/Invoice" },
   { title: "Customer Management", icon: <FaUsers />, path: "/Customer" },
   { title: "Employee Management", icon: <FaUserTie />, path: "/Employee" },
   { title: "Supplier Management", icon: <FaUsersCog />, path: "/Supplier" },
   { title: "Purchase Orders", icon: <FaClipboardList />, path: "/PurchaseOrder" },
+  { title: "Returns", icon: <FaClipboardList />, path: "/Returns" },
   { title: "Reports", icon: <FaChartBar />, path: "/reports" },
 ];
 
 const Sidebar = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push("/Login");
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -49,6 +57,17 @@ const Sidebar = () => {
           </ListItemButton>
         ))}
       </List>
+      <Box sx={{ flexGrow: 1 }} />
+      <Box sx={{ padding: 2 }}>
+        <Button
+          variant="contained"
+          color="error"
+          fullWidth
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
     </Drawer>
   );
 };
