@@ -20,31 +20,40 @@ const Login = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (!values.email || !values.password) {
-      setErrors({ message: "Both fields are required!" });
-      alert("Both fields are required!");
-      return;
+  if (!values.email || !values.password) {
+    setErrors({ message: "Both fields are required!" });
+    alert("Both fields are required!");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://localhost:8082/api/customers/login", values);
+
+    if (response.data.message === "Login successful") {
+      const { cusType, token } = response.data;
+
+      // Store cusType and token
+      sessionStorage.setItem("cusType", cusType);
+      sessionStorage.setItem("jwtToken", token);
+
+      console.log("Token stored in sessionStorage:", token);
+      //localStorage.setItem("cusType", cusType);
+      //localStorage.setItem("jwtToken", token);
+
+      alert(response.data.message);
+      router.push("/HomePage");
+    } else {
+      setErrors({ message: response.data.message });
+      alert(response.data.message);
     }
-
-    try {
-      const response = await axios.post("http://localhost:8082/api/customers/login", values);
-
-      if (response.data.message === "Login successful") {
-        sessionStorage.setItem("jwtToken", response.data.token);
-        alert(response.data.message);
-        router.push("/HomePage");
-      } else {
-        setErrors({ message: response.data.message });
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
-      setErrors({ message: "There was an error with the login. Please try again." });
-      alert("There was an error with the login. Please try again.");
-    }
-  };
+  } catch (error) {
+    console.error("Error:", error.response?.data || error.message);
+    setErrors({ message: "There was an error with the login. Please try again." });
+    alert("There was an error with the login. Please try again.");
+  }
+};
 
   return (
     <div className="signIn">

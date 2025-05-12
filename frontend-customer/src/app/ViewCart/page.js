@@ -23,18 +23,18 @@ const ViewCart = () => {
   const total = subtotal + shippingCost;
 
   // Handle quantity change
-  const handleQuantityChange = (itemId, newQuantity) => {
-    setCartItems(prevItems =>
-      prevItems.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+const handleQuantityChange = (productID, newQuantity) => {
+  setCartItems(prevItems =>
+    prevItems.map(item =>
+      item.productID === productID ? { ...item, quantity: newQuantity } : item
+    )
+  );
+};
 
-  // Handle item removal
-  const handleRemoveItem = (itemId) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
-  };
+// Handle item removal
+const handleRemoveItem = (productID) => {
+  setCartItems(prevItems => prevItems.filter(item => item.productID !== productID));
+};
 
   // Handle continue shopping
   const handleContinueShopping = () => {
@@ -93,12 +93,12 @@ const ViewCart = () => {
                 
                 <div className="cart-items-container">
                 {cartItems.map(item => (
-                    <CartItem 
-                    key={item.id} 
+                  <CartItem 
+                    key={item.productID} // Use productID as the unique key
                     item={item} 
                     onQuantityChange={handleQuantityChange}
                     onRemove={handleRemoveItem}
-                    />
+                  />
                 ))}
                 </div>
             </Paper>
