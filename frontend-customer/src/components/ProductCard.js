@@ -47,8 +47,8 @@ const ProductCard = ({ product }) => {
   }, [id]);
 
   const handleCardClick = () => {
-    router.push(`/ViewProduct?id=${id}`);
-  };
+  router.push(`/ViewProduct?id=${product.productID}`);
+};
 
   const handleAddToCart = (e) => {
     e.stopPropagation();

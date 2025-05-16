@@ -1,3 +1,5 @@
+import pool from "../config/db.js"; 
+
 export const getAllProducts = async (req, res) => {
     try {
         const { search, category } = req.query; // Extract query parameters
@@ -39,4 +41,60 @@ export const getAllProducts = async (req, res) => {
         console.error("Error fetching products:", error);
         res.status(500).json({ message: "Error fetching products", error });
     }
+};
+
+export const getProductDetails = async (req, res) => {
+  const { id } = req.params; // Extract ProductID from the request parameters
+
+  try {
+    // Query to fetch product details
+    const productQuery = `
+      SELECT 
+          p.productID AS id,
+          p.name AS name,
+          p.category AS category,
+          p.description AS description,
+          p.image AS image,
+          p.ageGrp AS ageGroup,
+          i.wholesalePrice AS wholesalePrice,
+          i.retailPrice AS retailPrice,
+          p.image AS image
+      FROM product p
+      LEFT JOIN inventory i ON p.productID = i.productID
+      WHERE p.productID = ?;
+    `;
+
+    const [productRows] = await pool.query(productQuery, [id]);
+
+    if (productRows.length === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Query to fetch product reviews
+    const reviewsQuery = `
+        SELECT 
+            pr.reviewID AS id,
+            pr.comment AS text,
+            pr.customerRating AS rating,
+            pr.createdAt AS date,
+            c.name AS customerName
+        FROM product_review pr
+        JOIN customer c ON pr.cusID = c.cusID
+        WHERE pr.productID = ?
+        ORDER BY pr.createdAt DESC;
+        `;
+
+    const [reviews] = await pool.query(reviewsQuery, [id]);
+
+    // Combine product details and reviews into a single response
+    const productDetails = {
+      ...productRows[0],
+      reviews,
+    };
+
+    res.status(200).json(productDetails); // Return the combined product details
+  } catch (error) {
+    console.error('Error fetching product details:', error);
+    res.status(500).json({ message: 'Failed to fetch product details' });
+  }
 };
