@@ -1,0 +1,134 @@
+.myaccount-all {
+    display: flex;
+    flex-direction: column; 
+    min-height: 100vh; 
+}
+
+.main-myaccount-content {
+    display: flex;
+    flex: 1;
+    margin: 5%;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    flex: 2.5;
+    margin: 20px;
+}
+
+.user-details {
+    display: flex; 
+    justify-content: space-between;    
+    margin-bottom: 20px;   
+}
+
+.user-form .form-button {
+    margin-top: 3%;
+    background-color: #0A2F6E; 
+    color: white; 
+    width: 20%;
+    gap: 10px;
+}
+
+.user-details-text {
+    flex: 1; 
+    margin-right: 30px; 
+}
+
+.user-details-text:last-child {
+    margin-right: 0; 
+}
+
+.user-details-text .MuiTextField-root {
+    width: 100%; 
+}
+
+.myaccount-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 30px;
+}
+
+footer {
+    margin-top: 5%; /* Push footer to the bottom */
+}
+
+@media (max-width: 1024px) {
+    .main-myaccount-content {
+        flex-direction: column; /* Stack sidebar and content vertically */
+        margin: 2%;
+    }
+
+    .sidebar-section {
+        max-width: 100%; /* Sidebar takes full width */
+        margin-bottom: 20px;
+    }
+
+    .user-details {
+        flex-direction: column; /* Stack fields vertically */
+        gap: 10px;
+    }
+
+    .user-form .form-button {
+        width: 40%; /* Increase button width */
+    }
+}
+
+/* Responsive styles for mobile devices (max-width: 768px) */
+@media (max-width: 768px) {
+    .main-myaccount-content {
+        margin: 2%;
+    }
+
+    .sidebar-section {
+        display: none; /* Hide the sidebar on smaller screens */
+    }
+
+    .user-details {
+        flex-direction: column; /* Stack fields vertically */
+        gap: 10px;
+    }
+
+    .user-details-text {
+        margin-right: 0;
+        min-width: 100%; /* Fields take full width */
+    }
+
+    .user-form .form-button {
+        width: 100%; /* Buttons take full width */
+    }
+
+    .myaccount-buttons {
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 10px;
+    }
+}
+
+/* Responsive styles for extra small devices (max-width: 480px) */
+@media (max-width: 480px) {
+    .main-myaccount-content {
+        margin: 1%;
+    }
+
+    .user-details-text {
+        min-width: 100%; /* Fields take full width */
+    }
+
+    .user-form .form-button {
+        width: 100%; /* Buttons take full width */
+    }
+
+    .myaccount-buttons {
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 10px;
+    }
+}
