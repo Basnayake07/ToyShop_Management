@@ -79,7 +79,7 @@ export const Header = ({ isHomePage = false }) => {
         {isLoggedIn ? (
           <Link href="/MyAccount" className="nav-link">My Account</Link>
         ) : (
-          <Link href="/SignIn" className="nav-link">Sign In</Link>
+          <Link href="/Login" className="nav-link">Sign In</Link>
         )}
       </nav>
 
@@ -103,10 +103,10 @@ export const Header = ({ isHomePage = false }) => {
             <SearchIcon />
           </IconButton>
         )}
-        <IconButton aria-label="favorites" className="icon-button">
+        <IconButton aria-label="favorites" className="icon-button" onClick={() => router.push("/WishlistPage")}>
           <FavoriteBorderIcon />
         </IconButton>
-        <IconButton aria-label="cart" className="icon-button">
+        <IconButton aria-label="cart" className="icon-button" onClick={() => router.push("/ViewCart")}>
           <ShoppingCartIcon />
         </IconButton>
       </div>

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import customerAuthRoutes from './routes/customerAuthRoutes.js'; 
 import customerProductRoutes from './routes/customerProductRoutes.js';
 import wishListsRoutes from './routes/wishListsRouter.js';
+import customerRoutes from './routes/customerRoutes.js'; // Adjust path if needed
 import db from './config/db.js'; 
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -61,6 +62,9 @@ app.get('/', (req, res) => {
 
 // Use the wishlist routes
 app.use('/api/wishlist', wishListsRoutes);
+
+// customer route
+app.use('/api/user', customerRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8082;
