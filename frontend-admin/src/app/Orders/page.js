@@ -37,6 +37,7 @@ const OrdersTable = ({ orders, onRowClick }) => {
         </span>
       ),
     },
+    { field: "deliveryStatus", headerName: "Delivery Status", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
@@ -73,6 +74,8 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [newDeliveryStatus, setNewDeliveryStatus] = useState("");
 
   // Fetch all orders
   const fetchOrders = async () => {
@@ -107,11 +110,30 @@ const Orders = () => {
     try {
       const response = await axios.get(`http://localhost:8081/api/orders/${orderID}`);
       setSelectedOrder(response.data); // Set the fetched order details
+      setNewDeliveryStatus(response.data.order.deliveryStatus);
       setOpenModal(true); // Open the modal
     } catch (error) {
       console.error("Error fetching order details:", error);
     }
   };
+
+  // Update delivery status handler
+const handleUpdateDeliveryStatus = async () => {
+  if (!selectedOrder) return;
+  setUpdatingStatus(true);
+  try {
+    await axios.put(
+      `http://localhost:8081/api/orders/${selectedOrder.order.orderID}/delivery-status`,
+      { deliveryStatus: newDeliveryStatus }
+    );
+    // Refresh order details and list
+    fetchOrderDetails(selectedOrder.order.orderID);
+    fetchOrders();
+  } catch (error) {
+    console.error("Error updating delivery status:", error);
+  }
+  setUpdatingStatus(false);
+};
 
   const handleRowClick = (orderID) => {
     fetchOrderDetails(orderID); // Fetch order details when a row is clicked
@@ -184,6 +206,28 @@ const Orders = () => {
             <Grid item xs={6}>
               <Typography variant="body2" color="text.secondary">Payment Status</Typography>
               <Typography variant="body1">{selectedOrder.order.payStatus}</Typography>
+            </Grid>
+            <Grid item xs={6}>
+            <Typography variant="body2" color="text.secondary">Delivery Status</Typography>
+            <select
+              value={newDeliveryStatus}
+              onChange={e => setNewDeliveryStatus(e.target.value)}
+              style={{ padding: "6px", borderRadius: 4, border: "1px solid #ccc", width: "100%" }}
+            >
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              onClick={handleUpdateDeliveryStatus}
+              disabled={updatingStatus || newDeliveryStatus === selectedOrder.order.deliveryStatus}
+              sx={{ mt: 1 }}
+            >
+              {updatingStatus ? "Updating..." : "Update"}
+            </Button>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="body2" color="text.secondary">Total Price</Typography>

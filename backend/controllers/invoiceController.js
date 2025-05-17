@@ -27,7 +27,7 @@ export const invoiceController = {
         // Update the payment status in the `orders` table
         const updateOrderQuery = `
           UPDATE orders
-          SET payStatus = ?
+          SET payStatus = ?, deliveryStatus = 'Completed'
           WHERE orderID = ?
         `;
         const payStatus = creditAmount > 0 ? "Partially Paid" : "Paid";
@@ -79,7 +79,7 @@ export const invoiceController = {
       // Fetch invoice details
       const invoiceQuery = `
         SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount, i.discount,
-               o.totalPrice, o.payStatus, o.adminID, c.name AS customerName, c.email AS customerEmail
+               o.totalPrice, o.payStatus, o.deliveryStatus, o.adminID, c.name AS customerName, c.email AS customerEmail
         FROM invoice i
         LEFT JOIN orders o ON i.orderID = o.orderID
         LEFT JOIN customer c ON o.cusID = c.cusID
@@ -112,7 +112,7 @@ getAllInvoices: async (req, res) => {
   try {
     const query = `
       SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount, i.discount,
-             o.totalPrice, o.payStatus, c.name AS customerName, c.email AS customerEmail
+             o.totalPrice, o.payStatus, o.deliveryStatus, c.name AS customerName, c.email AS customerEmail
       FROM invoice i
       LEFT JOIN orders o ON i.orderID = o.orderID
       LEFT JOIN customer c ON o.cusID = c.cusID

@@ -45,7 +45,7 @@ export const orderController = {
     getAllOrders: async (req, res) => {
       try {
         const query = `
-          SELECT o.orderID, o.orderDate, o.totalPrice, o.payStatus, 
+          SELECT o.orderID, o.orderDate, o.totalPrice, o.payStatus, o.deliveryStatus,
                  c.name AS customerName, c.email AS customerEmail
           FROM orders o
           LEFT JOIN customer c ON o.cusID = c.cusID
@@ -57,6 +57,23 @@ export const orderController = {
         res.status(500).json({ message: "Error fetching orders", error });
       }
     },
+
+      updateDeliveryStatus: async (req, res) => {
+      const { orderID } = req.params;
+      const { deliveryStatus } = req.body;
+      const validStatuses = ["Completed", "Pending", "Delivered"];
+      if (!validStatuses.includes(deliveryStatus)) {
+        return res.status(400).json({ message: "Invalid delivery status" });
+      }
+      try {
+        const updateQuery = `UPDATE orders SET deliveryStatus = ? WHERE orderID = ?`;
+        await req.db.execute(updateQuery, [deliveryStatus, orderID]);
+        res.status(200).json({ message: "Delivery status updated" });
+      } catch (error) {
+        console.error("Error updating delivery status:", error);
+        res.status(500).json({ message: "Error updating delivery status", error });
+      }
+    },
   
     // Fetch order details by order ID
     getOrderDetails: async (req, res) => {
@@ -65,7 +82,7 @@ export const orderController = {
       try {
         // Fetch order details
         const orderQuery = `
-          SELECT o.orderID, o.orderDate, o.totalPrice, o.payStatus, 
+          SELECT o.orderID, o.orderDate, o.totalPrice, o.payStatus, o.deliveryStatus, 
                  c.name AS customerName, c.email AS customerEmail
           FROM orders o
           LEFT JOIN customer c ON o.cusID = c.cusID

@@ -35,6 +35,7 @@ const InvoicesTable = ({ invoices, onRowClick }) => {
           </span>
         ),
       },
+      { field: "deliveryStatus", headerName: "Delivery Status", width: 150 },
       { field: "totalPrice", headerName: "Total Price (Rs.)", width: 120 },
       { field: "received_amount", headerName: "Received Amount (Rs.)", width: 150 },
       { field: "credit_amount", headerName: "Credit Amount (Rs.)", width: 120 },

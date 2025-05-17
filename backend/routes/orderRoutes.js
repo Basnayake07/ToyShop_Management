@@ -12,4 +12,7 @@ router.get("/orders", orderController.getAllOrders);
 // Route to fetch order details by order ID
 router.get("/orders/:orderID", orderController.getOrderDetails);
 
+// Route to update an order status
+router.put("/orders/:orderID/delivery-status", orderController.updateDeliveryStatus);
+
 export default router;
