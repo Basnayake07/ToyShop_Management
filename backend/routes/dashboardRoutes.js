@@ -2,7 +2,7 @@ import express from "express";
 import {
   getDashboardDetails,
   getSalesChart,
-  getLowStockProducts,
+  getLowStockProducts, getLowStockCount
 } from "../controllers/dashboardController.js";
 
 const router = express.Router();
@@ -15,5 +15,8 @@ router.get("/dashboard/sales-chart", getSalesChart);
 
 // Route to get low stock products
 router.get("/dashboard/low-stock", getLowStockProducts);
+
+// Route to get low stock count
+router.get("/dashboard/low-stock/count", getLowStockCount);
 
 export default router;

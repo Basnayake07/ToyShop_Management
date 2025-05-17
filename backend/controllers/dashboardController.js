@@ -46,7 +46,7 @@ export const getSalesChart = async (req, res) => {
   }
 };
 
-// Get low stock product list
+/* // Get low stock product list
 export const getLowStockProducts = async (req, res) => {
   try {
     const sql = `
@@ -62,4 +62,28 @@ export const getLowStockProducts = async (req, res) => {
     console.error('Server error:', error);
     res.status(500).json({ message: 'Server error' });
   }
+}; */
+
+// Get low stock product count
+export const getLowStockCount = async (req, res) => {
+  try {
+    const sql = `SELECT COUNT(*) AS lowStockCount FROM LowStockProducts`;
+    const [result] = await pool.query(sql);
+    res.status(200).json(result[0]);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
+
+ // Get low stock product list
+export const getLowStockProducts = async (req, res) => {
+  try {
+    const sql = `SELECT * FROM LowStockProducts`;
+    const [result] = await pool.query(sql);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}; 

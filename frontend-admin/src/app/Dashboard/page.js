@@ -7,18 +7,26 @@ import CardComponent from "@/components/CardComponent";
 import SalesChart from "@/components/salesChart";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import InventoryOutlinedIcon from "@mui/icons-material/InventoryOutlined";
+import AssignmentReturnOutlinedIcon from "@mui/icons-material/AssignmentReturnOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import "@/styles/Dashboard.css";
 
 const Dashboard = () => {
     const [details, setDetails] = useState({});
     const [salesData, setSalesData] = useState([]);
+    const [lowStockCount, setLowStockCount] = useState(0);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     // Fetch dashboard details
     useEffect(() => {
         const fetchDetails = async () => {
             try {
+                setLoading(true);
                 const response = await fetch("http://localhost:8081/api/dashboard/summary");
                 if (!response.ok) {
                     throw new Error("Failed to fetch dashboard details");
@@ -27,6 +35,8 @@ const Dashboard = () => {
                 setDetails(data);
             } catch (error) {
                 console.error("Error fetching dashboard details:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -51,6 +61,22 @@ const Dashboard = () => {
         fetchSalesData();
     }, []);
 
+    
+    // Fetch low stock count
+    useEffect(() => {
+        const fetchLowStockCount = async () => {
+            try {
+                const response = await fetch("http://localhost:8081/api/dashboard/low-stock/count");
+                if (!response.ok) throw new Error("Failed to fetch low stock count");
+                const data = await response.json();
+                setLowStockCount(data.lowStockCount || 0);
+            } catch (error) {
+                console.error("Error fetching low stock count:", error);
+            }
+        };
+        fetchLowStockCount();
+    }, []);
+
     // Navigate to low stock details page
     const handleLowStockClick = () => {
         router.push('/LowStockDetails');
@@ -61,45 +87,53 @@ const Dashboard = () => {
         { 
           title: 'Pending Orders', 
           value: details.PendingOrders || 0, 
-          description: 'Total number of pending orders',
-          icon: <DashboardIcon />,
-          color: '#4361ee'
+          description: 'Total pending orders',
+          icon: <ShoppingCartOutlinedIcon />,
+          color: '#3498db'
         },
         { 
           title: 'Total Revenue', 
           value: `Rs.${details.TotalRevenue || 0}`, 
-          description: 'Total revenue from paid orders',
-          icon: <DashboardIcon />,
-          color: '#3a0ca3'
+          description: 'Revenue from paid orders',
+          icon: <AccountBalanceWalletOutlinedIcon />,
+          color: '#2ecc71'
         },
         { 
           title: 'Total Customers', 
           value: details.TotalCustomers || 0, 
-          description: 'Total number of customers',
-          icon: <DashboardIcon />,
-          color: '#4cc9f0'
+          description: 'Registered customers',
+          icon: <PeopleAltOutlinedIcon />,
+          color: '#9b59b6'
         },
         { 
           title: 'Total Products', 
           value: details.TotalProducts || 0, 
-          description: 'Total number of products',
-          icon: <DashboardIcon />,
-          color: '#f72585'
+          description: 'Available products',
+          icon: <InventoryOutlinedIcon />,
+          color: '#f39c12'
         },
         { 
           title: 'Return Requests', 
           value: details.PendingOrderReturns || 0, 
-          description: 'Total number of  returns',
-          icon: <DashboardIcon />,
-          color: '#ff9e00'
+          description: 'Pending returns',
+          icon: <AssignmentReturnOutlinedIcon />,
+          color: '#1abc9c'
         },
         { 
           title: 'Low Stock Products', 
-          value: details.LowStockProducts || 0, 
-          description: 'Click To See Details', 
+          value: lowStockCount,
+          description: 'Click for details', 
           onClick: handleLowStockClick,
-          icon: <DashboardIcon />,
-          color: '#ef233c'
+          icon: <WarningAmberOutlinedIcon />,
+          color: '#e74c3c'
+        },
+
+        {
+        title: 'Partially Paid Customers',
+        value: details.PartiallyPaidCustomers || 0,
+        description: 'Customers with partial payments',
+        icon: <AccountBalanceWalletOutlinedIcon />, 
+        color: '#ff9800'
         },
     ];
 
@@ -111,7 +145,7 @@ const Dashboard = () => {
                 <div className="dashboard-content">
                     <div className="cards-section">
                         <Box sx={{ flexGrow: 1 }}>
-                        <Grid container spacing={2}>
+                        <Grid container spacing={3} sx={{ minHeight: '220px' }}>
                             {cardDetails.map((detail, index) => (
                                 <Grid item xs={12} sm={6} md={4} key={index}>
                                 <CardComponent
@@ -121,6 +155,7 @@ const Dashboard = () => {
                                     icon={detail.icon}
                                     color={detail.color}
                                     onClick={detail.onClick}
+                                    loading={loading}
                                 />
                                 </Grid>
                             ))}
@@ -129,8 +164,8 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="sales-chart">
-                        <h2>Sales Chart</h2>
-                        <p>Sales Revenue of Last 7 Days</p>
+                        <h2>Sales Overview</h2>
+                        <p>Revenue trends for the past 7 days</p>
                         <SalesChart data={salesData} />
                     </div>
                 </div>
