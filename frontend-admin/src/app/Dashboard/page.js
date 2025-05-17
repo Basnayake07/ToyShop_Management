@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import Sidebar from "@/components/Sidebar";
 import CardComponent from "@/components/CardComponent";
 import SalesChart from "@/components/salesChart";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
@@ -19,6 +17,7 @@ const Dashboard = () => {
     const [details, setDetails] = useState({});
     const [salesData, setSalesData] = useState([]);
     const [lowStockCount, setLowStockCount] = useState(0);
+    const [partiallyPaidCount, setPartiallyPaidCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -82,6 +81,27 @@ const Dashboard = () => {
         router.push('/LowStockDetails');
     };
 
+    // Fetch partially paid customers count
+    useEffect(() => {
+        const fetchPartiallyPaidCount = async () => {
+            try {
+                const response = await fetch("http://localhost:8081/api/dashboard/partially-paid-customers/count");
+                if (!response.ok) throw new Error("Failed to fetch partially paid customer count");
+                const data = await response.json();
+                setPartiallyPaidCount(data.partiallyPaidCustomerCount || 0);
+            } catch (error) {
+                console.error("Error fetching partially paid customer count:", error);
+            }
+        };
+        fetchPartiallyPaidCount();
+    }, []);
+
+    // Navigate to partially paid customers details page
+    const handlePartiallyPaidClick = () => {
+        router.push('/PartiallyPaidCus');
+    };
+
+
     // Card details with icons and colors
     const cardDetails = [
         { 
@@ -127,15 +147,19 @@ const Dashboard = () => {
           icon: <WarningAmberOutlinedIcon />,
           color: '#e74c3c'
         },
-
         {
-        title: 'Partially Paid Customers',
-        value: details.PartiallyPaidCustomers || 0,
-        description: 'Customers with partial payments',
-        icon: <AccountBalanceWalletOutlinedIcon />, 
-        color: '#ff9800'
+          title: 'Partially Paid Customers',
+          value: partiallyPaidCount || 0,
+          description: 'Customers with partial payments',
+          icon: <AccountBalanceWalletOutlinedIcon />, 
+          color: '#ff9800',
+          onClick: handlePartiallyPaidClick
         },
     ];
+
+    // Split card details for the two rows
+    const firstRowCards = cardDetails.slice(0, 4); // First 4 cards
+    const secondRowCards = cardDetails.slice(4);   // Remaining 3 cards
 
     return (
         <div className="dashboard">
@@ -144,11 +168,11 @@ const Dashboard = () => {
                 <h1>Admin Dashboard</h1>
                 <div className="dashboard-content">
                     <div className="cards-section">
-                        <Box sx={{ flexGrow: 1 }}>
-                        <Grid container spacing={3} sx={{ minHeight: '220px' }}>
-                            {cardDetails.map((detail, index) => (
-                                <Grid item xs={12} sm={6} md={4} key={index}>
+                        {/* First row with 4 cards */}
+                        <div className="cards-row first-row">
+                            {firstRowCards.map((detail, index) => (
                                 <CardComponent
+                                    key={index}
                                     title={detail.title}
                                     value={detail.value}
                                     description={detail.description}
@@ -157,10 +181,24 @@ const Dashboard = () => {
                                     onClick={detail.onClick}
                                     loading={loading}
                                 />
-                                </Grid>
                             ))}
-                            </Grid> 
-                        </Box>
+                        </div>
+                        
+                        {/* Second row with 3 cards */}
+                        <div className="cards-row second-row">
+                            {secondRowCards.map((detail, index) => (
+                                <CardComponent
+                                    key={index + 4}
+                                    title={detail.title}
+                                    value={detail.value}
+                                    description={detail.description}
+                                    icon={detail.icon}
+                                    color={detail.color}
+                                    onClick={detail.onClick}
+                                    loading={loading}
+                                />
+                            ))}
+                        </div>
                     </div>
                     
                     <div className="sales-chart">

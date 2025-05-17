@@ -23,6 +23,35 @@
   margin-bottom: 1rem;
 }
 
+/* Cards Row Layout */
+.cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+/* First row - 4 cards */
+.cards-row.first-row {
+  justify-content: space-between;
+}
+
+.cards-row.first-row .card {
+  flex: 0 0 calc(25% - 1.125rem);
+  max-width: calc(25% - 1.125rem);
+}
+
+/* Second row - 3 cards */
+.cards-row.second-row {
+  justify-content: space-between;
+}
+
+.cards-row.second-row .card {
+  flex: 0 0 calc(33.33% - 1rem);
+  max-width: calc(33.33% - 1rem);
+}
+
 .MuiGrid-item {
   height: auto !important;
 }
@@ -81,27 +110,6 @@ h1:after {
   height: 4px;
   background: linear-gradient(to right, #3498db, #2980b9);
   border-radius: 2px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .container {
-    margin-left: 200px;
-    width: calc(100% - 200px);
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    margin-left: 0;
-    width: 100%;
-    padding: 1rem;
-  }
-  
-  .dashboard-content {
-    gap: 1.5rem;
-  }
 }
 
 /* Card Styles */
@@ -180,8 +188,44 @@ h1:after {
   width: 120px;
 }
 
-/* Responsive adjustments for cards */
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .cards-row.first-row .card {
+    flex: 0 0 calc(50% - 0.75rem);
+    max-width: calc(50% - 0.75rem);
+  }
+  
+  .cards-row.second-row .card {
+    flex: 0 0 calc(50% - 0.75rem);
+    max-width: calc(50% - 0.75rem);
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+    padding: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .container {
+    margin-left: 0;
+    width: 100%;
+    padding: 1rem;
+  }
+  
+  .dashboard-content {
+    gap: 1.5rem;
+  }
+  
+  .cards-row.first-row .card,
+  .cards-row.second-row .card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
   .card {
     padding: 1.25rem;
   }

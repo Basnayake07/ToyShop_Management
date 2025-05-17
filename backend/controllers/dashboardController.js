@@ -87,3 +87,27 @@ export const getLowStockProducts = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 }; 
+
+// Get all partially paid customers
+export const getPartiallyPaidCustomers = async (req, res) => {
+  try {
+    const sql = `SELECT * FROM PartiallyPaidCustomers`;
+    const [result] = await pool.query(sql);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get count of partially paid customers
+export const getPartiallyPaidCustomersCount = async (req, res) => {
+  try {
+    const sql = `SELECT COUNT(DISTINCT cusID) AS partiallyPaidCustomerCount FROM PartiallyPaidCustomers`;
+    const [result] = await pool.query(sql);
+    res.status(200).json(result[0]);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
