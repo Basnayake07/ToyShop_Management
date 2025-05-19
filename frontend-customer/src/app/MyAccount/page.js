@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import { Button, TextField, MenuItem } from "@mui/material";
-import { getUserDetails, updateUserDetails, getCustomerOrders } from '@/services/userService'; 
+import { getUserDetails, updateUserDetails } from '@/services/userService'; 
 import AlertComponent from '@/components/AlertComponent';
 import { Sidebar } from '@/components/Sidebar'; 
 import '@/styles/MyAccount.css';
@@ -25,7 +25,7 @@ const MyAccount = () => {
     cusType: '',
     phoneNumbers: ['']
   });
-  const [orders, setOrders] = useState([]);
+  
   const [alert, setAlert] = useState({ severity: '', title: '', message: '' });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
@@ -50,11 +50,11 @@ const MyAccount = () => {
         });
 
          // Fetch orders
-      getCustomerOrders()
+      /* getCustomerOrders()
         .then(setOrders)
         .catch((error) => {
           setAlert({ severity: 'error', title: 'Error', message: error.message });
-        });
+        }); */
     }
   }, [router]);
 
@@ -193,33 +193,8 @@ const MyAccount = () => {
               )}
             </div>
           </form>
-              <hr style={{ margin: '32px 0' }} />
-<h2>Order History</h2>
-{orders.length === 0 ? (
-  <p>No orders found.</p>
-) : (
-  <div className="order-history">
-    {orders.map(order => (
-      <div key={order.orderID} className="order-card" style={{ border: '1px solid #eee', borderRadius: 8, marginBottom: 16, padding: 16 }}>
-        <div><b>Order ID:</b> {order.orderID}</div>
-        <div><b>Date:</b> {new Date(order.orderDate).toLocaleString()}</div>
-        <div><b>Status:</b> {order.payStatus}</div>
-        <div><b>Total:</b> Rs. {order.totalPrice}</div>
-        <div>
-          <b>Items:</b>
-          <ul>
-            {order.items.map(item => (
-              <li key={item.orderItemID}>
-                {item.productName} (x{item.quantity}) - Rs. {item.price}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    ))}
-  </div>
-)}
 
+          
         </div>
       </main>
       <Footer />
