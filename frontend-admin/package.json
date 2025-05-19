@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 3001 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,9 +13,13 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@mui/x-charts": "^8.3.0",
     "@mui/x-data-grid": "^7.28.0",
+    "@react-pdf/renderer": "^4.3.0",
     "axios": "^1.8.1",
+    "date-fns": "^4.1.0",
     "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lodash": "^4.17.21",
     "next": "^15.2.1",
     "react": "^19.0.0",
