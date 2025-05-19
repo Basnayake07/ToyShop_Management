@@ -33,7 +33,7 @@ export const Sidebar = () => {
       title: "My Orders", 
       icon: <FiBox />, 
       subItems: [
-        { title: "Completed", link: "/CompletedOrders" },
+        { title: "Completed", link: "/OrderHistory" },
         { title: "Returns", link: "/ReturnOrders" }
       ] 
     },

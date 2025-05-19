@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Header } from "@/components/Header";
 import { getProductDetails } from '@/services/productService';
@@ -20,6 +21,12 @@ const ViewProduct = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const router = useRouter();
+
+  const shareUrl = 'https://Toyshop.com/ViewProduct?id=${productID}';
+  const shareTitle = `Check out this product: ${product?.name}`;
+
 
   const searchParams = useSearchParams();
   const productID = searchParams.get('id');
@@ -29,6 +36,7 @@ const ViewProduct = () => {
       try {
         const productData = await getProductDetails(productID);
         setProduct(productData);
+        setReviews(productData.reviews || []);
         // Set defaults if attributes exist
         if (productData?.attributes) {
           const colorAttr = productData.attributes.find(a => a.attribute === 'color');
@@ -68,45 +76,45 @@ const ViewProduct = () => {
     setQuantity(q => type === 'increase' ? q + 1 : Math.max(1, q - 1));
   };
 
-  const handleColorSelect = (color) => setSelectedColor(color);
-  const handleSizeSelect = (size) => setSelectedSize(size);
-
   const handleAddToCart = () => {
     // Implement your add to cart logic here
     alert(`Added ${quantity} x ${product.name} (${selectedColor}, ${selectedSize}) to cart!`);
   };
 
-  const handleBuyNow = () => {
-    // Implement your buy now logic here
-    alert(`Buying ${quantity} x ${product.name} (${selectedColor}, ${selectedSize})`);
-  };
-
   const openShareModal = () => setIsShareModalOpen(true);
-  const closeShareModal = () => setIsShareModalOpen(false);
+const closeShareModal = () => setIsShareModalOpen(false);
 
-  if (loading) return <div className="loading-container">Loading...</div>;
-  if (!product) return <div className="error-container">Product not found</div>;
-
-  // Prepare attributes
-  const colors = product.attributes?.filter(a => a.attribute === 'color').map(a => a.value) || [];
-  const sizes = product.attributes?.filter(a => a.attribute === 'size').map(a => a.value) || [];
-  const reviews = product.reviews || [];
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const handleBuyNow = () => {
+  const productData = {
+    id: product.id,
+    name: product.name,
+    price: product.retailPrice,
+    quantity,
+    
+  };
+  localStorage.removeItem('cartItems');
+  const queryString = new URLSearchParams(productData).toString();
+  router.push(`/Checkout?${queryString}`);
+};  
 
   return (
     <div className="view-product">
-      <Header isHomePage={false} />
-      <main className="product-content-container">
-        <div className="product-gallery">
-          <Image
-            src={product.image}
-            alt={product.name}
-            width={350}
-            height={350}
-            objectFit="contain"
-            className="main-product-image"
-          />
-        </div>
+    <Header isHomePage={false} />
+    {loading || !product ? (
+      <div style={{ padding: 40, textAlign: 'center' }}>Loading product...</div>
+    ) : (
+      <>
+        <main className="product-content-container">
+          <div className="product-gallery">
+            <Image
+              src={product.image}
+              alt={product.name}
+              width={350}
+              height={350}
+              objectFit="contain"
+              className="main-product-image"
+            />
+          </div>
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>
           <div className="product-price">Rs. {Number(product.retailPrice).toFixed(2)}</div>
@@ -117,37 +125,6 @@ const ViewProduct = () => {
               ({reviews.length > 0 ? reviews[0].rating.toFixed(1) : 'No ratings yet'})
             </span>
           </div>
-          {colors.length > 0 && (
-            <div className="color-options">
-              <span className="option-label">Colours:</span>
-              <div className="color-selector">
-                {colors.map(color => (
-                  <button
-                    key={color}
-                    className={`color-btn${selectedColor === color ? ' selected' : ''}`}
-                    style={{ backgroundColor: color.toLowerCase() }}
-                    onClick={() => handleColorSelect(color)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {sizes.length > 0 && (
-            <div className="size-options">
-              <span className="option-label">Size:</span>
-              <div className="size-selector">
-                {sizes.map(size => (
-                  <button
-                    key={size}
-                    className={`size-btn${selectedSize === size ? ' selected' : ''}`}
-                    onClick={() => handleSizeSelect(size)}
-                  >
-                    {size.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
           <div className="product-actions">
             <div className="quantity-selector">
               <button className="quantity-btn" onClick={() => handleQuantityChange('decrease')}>−</button>
@@ -187,6 +164,8 @@ const ViewProduct = () => {
         shareUrl={shareUrl}
         title={product.name}
       />
+      </>
+    )}
     </div>
   );
 };

@@ -43,7 +43,8 @@ const handleRemoveItem = (productID) => {
 
   // Handle checkout
   const handleCheckout = () => {
-    router.push('/checkout');
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    router.push('/Checkout');
   };
 
   // Render empty cart
