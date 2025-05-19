@@ -12,8 +12,7 @@ const AddBatchForm = ({ onClose, onBatchAdded }) => {
     cost: "",
     wholesalePrice: "",
     retailPrice: "",
-    minStock: "",
-    minProfitMargin: ""
+    minStock: ""
   });
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,11 +53,12 @@ const AddBatchForm = ({ onClose, onBatchAdded }) => {
       console.log(response.data);
       onClose();
       onBatchAdded();
-    } catch (error) {
-      console.error("Error adding batch:", error);
-      alert("Failed to add inventory batch.");
+  } catch (error) {
+    if (error.response && error.response.status === 403) {
+      alert(error.response.data.message); 
     }
-  };
+  }
+};
 
   return (
     <Paper style={{ padding: 20, maxWidth: 500, margin: "auto", marginTop: 20 }}>
@@ -137,16 +137,6 @@ const AddBatchForm = ({ onClose, onBatchAdded }) => {
           name="minStock"
           type="number"
           value={batch.minStock}
-          onChange={handleChange}
-          fullWidth
-          required
-          margin="normal"
-        />
-        <TextField
-          label="Minimum Profit Margin"
-          name="minProfitMargin"
-          type="number"
-          value={batch.minProfitMargin}
           onChange={handleChange}
           fullWidth
           required

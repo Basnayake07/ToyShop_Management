@@ -29,8 +29,7 @@ const headCells = [
   { id: 'cost', label: 'Cost' },
   { id: 'wholesalePrice', label: 'Wholesale Price' },
   { id: 'retailPrice', label: 'Retail Price' },
-  { id: 'minStock', label: 'Min Stock' },
-  { id: 'minProfitMargin', label: 'Min Profit Margin' },
+  { id: 'minStock', label: 'Min Stock' }
 ];
 
 const predefinedCategories = [
@@ -121,8 +120,9 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate }) {
     fetchInventory();
     setSelectedRow(null);
   } catch (error) {
-    alert("Failed to delete batch.");
-    console.error("Delete error:", error);
+    if (error.response && error.response.status === 403) {
+      alert(error.response.data.message); 
+    }
   }
 };
 
@@ -157,8 +157,9 @@ const handleUpdateSave = async () => {
     setUpdateModalOpen(false);
     setSelectedRow(null);
   } catch (error) {
-    alert("Failed to update inventory.");
-    console.error("Update error:", error);
+    if (error.response && error.response.status === 403) {
+      alert(error.response.data.message); 
+    }
   }
 };
 
@@ -250,7 +251,6 @@ const handleUpdateSave = async () => {
                     <TableCell>{row.wholesalePrice}</TableCell>
                     <TableCell>{row.retailPrice}</TableCell>
                     <TableCell>{row.minStock}</TableCell>
-                    <TableCell>{row.minProfitMargin}</TableCell>
                   </TableRow>
                   );
                 })}

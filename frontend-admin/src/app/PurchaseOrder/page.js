@@ -82,8 +82,12 @@ const handleRowClick = async (purchaseID) => {
       fetchPurchaseOrders(); // Refresh the table
       setShowFeedbackField(false); // Hide feedback field
     } catch (error) {
+      if (error.response && error.response.status === 403) {
+        alert(error.response.data.message); 
+      } else { 
       console.error("Error updating feedback:", error);
       alert("Failed to update feedback.");
+    }
     }
   };
 

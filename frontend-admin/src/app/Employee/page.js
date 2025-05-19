@@ -99,10 +99,13 @@ export default function EmployeeTable() {
         alert("Failed to delete employee.");
       }
     } catch (error) {
-      console.error("Error deleting employee:", error);
+      if (error.response && error.response.status === 403) {
+      alert(error.response.data.message); 
+    } else {
       alert("Failed to delete employee.");
     }
-  };
+  }
+    };
 
   // Handle Update Button Click
   const handleUpdate = () => {
@@ -146,8 +149,9 @@ export default function EmployeeTable() {
       );
       setUpdateSuccess(true);
     } catch (error) {
-      console.error("Error updating employee:", error);
-      alert("Failed to update employee.");
+      if (error.response && error.response.status === 403) {
+      alert(error.response.data.message); 
+  }
     }
 
     setOpen(false);
@@ -188,7 +192,7 @@ export default function EmployeeTable() {
           <div>
             <Button
               variant="contained"
-              sx={{ ml: -2, backgroundColor: "#98FF98", color: "white", marginRight: "30px" }}
+              sx={{ ml: -2, backgroundColor: "#4CBB17", color: "white", marginRight: "30px" }}
               onClick={handleOpen}
             >
               Add Employee
