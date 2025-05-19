@@ -1,14 +1,15 @@
 import express from 'express';
-import {registerEmp, loginAdmin, getAllUsers, deleteEmployees, updateEmployee} from '../controllers/authController.js';
+import {registerEmp, loginUser, getAllUsers, deleteEmployees, updateEmployee} from '../controllers/authController.js';
+import { verifyAdmin } from '../middleware/authAdmin.js';
 
 const router = express.Router();
 // Register route
-router.post('/register', registerEmp);
+router.post('/register', verifyAdmin, registerEmp);
 
-router.post('/login', loginAdmin);
+router.post('/login', loginUser);
 router.get('/users', getAllUsers);
-router.delete('/delete', deleteEmployees);
-router.put('/update', updateEmployee);
+router.delete('/delete', verifyAdmin, deleteEmployees);
+router.put('/update', verifyAdmin, updateEmployee);
 
 
 

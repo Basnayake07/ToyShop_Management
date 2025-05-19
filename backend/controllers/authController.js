@@ -49,7 +49,7 @@ export const registerEmp = async (req, res) => {
       const insertPhoneQuery = 'INSERT INTO emp_phone (adminID, phoneNumber) VALUES (?, ?)';
       
       await Promise.all(phoneNumbers.map(phoneNumber => 
-        pool.query(insertPhoneQuery, [adminID, phoneNumber])
+        pool.query(insertPhoneQuery, [nextID, phoneNumber])
       ));
   
       return res.status(200).json({ message: 'Employee registered successfully' });
@@ -61,8 +61,8 @@ export const registerEmp = async (req, res) => {
   };
   
   
-  // Admin Login
-export const loginAdmin = async (req, res) => {
+  // User Login
+export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -76,42 +76,38 @@ export const loginAdmin = async (req, res) => {
                 console.error("Database connection error:", err);
                 return res.status(500).json({ message: "Database connection error" });
             }
-            console.log(" Database connection successful");
             connection.release();
         });
 
-        const sql = 'SELECT * FROM admin WHERE email = ? AND role = "admin"';
-        // Query the database using await 
+        // Remove the role filter so both admin and employee can login
+        const sql = 'SELECT * FROM admin WHERE email = ?';
         const [rows] = await pool.query(sql, [email]);
 
         if (rows.length === 0) {
-            console.log("Invalid credentials - No admin found");
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const admin = rows[0]; // Get the first matching admin
-     
+        const user = rows[0];
 
         // Compare the entered password with the stored hashed password
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
-        console.log("Password Validation Result:", isPasswordValid);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate JWT token
+        // Generate JWT token with role
         const token = jwt.sign(
             {
-                adminID: admin.adminID,
-                name: admin.name,
-                role: admin.role
+                adminID: user.adminID,
+                name: user.name,
+                role: user.role // will be 'admin' or 'employee'
             },
             process.env.JWT_SECRET,
             { expiresIn: '5h' }
         );
 
-        res.status(200).json({ message: 'Login successful', token, adminID: admin.adminID });
+        res.status(200).json({ message: 'Login successful', token, adminID: user.adminID, role: user.role });
 
     } catch (error) {
         console.error('Error:', error);

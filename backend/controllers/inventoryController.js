@@ -40,10 +40,10 @@ export const getInventory = async (req, res) => {
 
 // Add new inventory item
 export const addInventory = async (req, res) => {
-    const { productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin } = req.body;
+    const { productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock } = req.body;
   
     // Check if all fields are provided
-    if (!productID || !receivedDate || !quantity || !cost || !wholesalePrice || !retailPrice || !minStock || !minProfitMargin) {
+    if (!productID || !receivedDate || !quantity || !cost || !wholesalePrice || !retailPrice || !minStock) {
         return res.status(400).json({ message: 'All fields are required!' });
     }
 
@@ -77,8 +77,8 @@ export const addInventory = async (req, res) => {
         const nextBatchID = `BA${lastBatchID + 1}`;
 
 
-        const insertInventoryQuery = `INSERT INTO inventory (batchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        await pool.query(insertInventoryQuery, [nextBatchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin]);
+        const insertInventoryQuery = `INSERT INTO inventory (batchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        await pool.query(insertInventoryQuery, [nextBatchID, productID, receivedDate, quantity, cost, wholesalePrice, retailPrice, minStock]);
   
         return res.status(200).json({ message: 'Inventory added successfully' });
     } catch (error) {
