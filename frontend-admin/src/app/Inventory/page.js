@@ -55,7 +55,7 @@ const modalStyle = {
   p: 4,
 };
 
-export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete }) {
+export default function InventoryTable({ rows = [], onAdd, onUpdate }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [search, setSearch] = React.useState('');
@@ -63,6 +63,14 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
   const [category, setCategory] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [inventory, setInventory] = React.useState([]);
+  const [updateModalOpen, setUpdateModalOpen] = React.useState(false);
+  const [editFields, setEditFields] = React.useState({
+      quantity: '',
+      cost: '',
+      wholesalePrice: '',
+      retailPrice: '',
+      minStock: ''
+    });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -101,6 +109,58 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
   const handleBatchAdded = () => {
     fetchInventory(); // Fetch the latest inventory data after a new batch is added
   };
+
+  const onDelete = async (row) => {
+  if (!row) return;
+  if (!window.confirm(`Are you sure you want to delete batch ${row.batchID} for product ${row.productID}?`)) return;
+  try {
+    await axios.put(
+      `http://localhost:8081/api/inventory/batch/${row.batchID}/${row.productID}/delete`
+    );
+    // Refresh inventory after deletion
+    fetchInventory();
+    setSelectedRow(null);
+  } catch (error) {
+    alert("Failed to delete batch.");
+    console.error("Delete error:", error);
+  }
+};
+
+// Open modal and load selected row
+const handleUpdate = (row) => {
+  if (!row) return;
+  setEditFields({
+    quantity: row.quantity,
+    cost: row.cost,
+    wholesalePrice: row.wholesalePrice,
+    retailPrice: row.retailPrice,
+    minStock: row.minStock
+  });
+  setUpdateModalOpen(true);
+};
+
+// Handle field changes
+const handleEditFieldChange = (e) => {
+  const { name, value } = e.target;
+  setEditFields(prev => ({ ...prev, [name]: value }));
+};
+
+// Save update
+const handleUpdateSave = async () => {
+  if (!selectedRow) return;
+  try {
+    await axios.put(
+      `http://localhost:8081/api/inventory/batch/${selectedRow.batchID}/${selectedRow.productID}`,
+      editFields
+    );
+    fetchInventory();
+    setUpdateModalOpen(false);
+    setSelectedRow(null);
+  } catch (error) {
+    alert("Failed to update inventory.");
+    console.error("Update error:", error);
+  }
+};
 
   React.useEffect(() => {
     fetchInventory(); // Fetch inventory data when the component mounts
@@ -157,7 +217,7 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
             <Button
               variant="contained"
               color="primary"
-              onClick={() => onUpdate(selectedRow)}
+              onClick={() => handleUpdate(selectedRow)}
               disabled={!selectedRow}
             >
               Update
@@ -216,6 +276,62 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate, onDelete })
           <AddBatchForm onClose={handleClose} onBatchAdded={handleBatchAdded} /> {/* No need to pass products */}
         </Box>
       </Modal>
+
+      {/* Modal for Update */}
+      <Modal open={updateModalOpen} onClose={() => setUpdateModalOpen(false)}>
+      <Box sx={{ ...modalStyle }}>
+        <h3>Update Inventory Batch</h3>
+        <TextField
+          label="Quantity"
+          name="quantity"
+          type="number"
+          value={editFields.quantity}
+          onChange={handleEditFieldChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Cost"
+          name="cost"
+          type="number"
+          value={editFields.cost}
+          onChange={handleEditFieldChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Wholesale Price"
+          name="wholesalePrice"
+          type="number"
+          value={editFields.wholesalePrice}
+          onChange={handleEditFieldChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Retail Price"
+          name="retailPrice"
+          type="number"
+          value={editFields.retailPrice}
+          onChange={handleEditFieldChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Min Stock"
+          name="minStock"
+          type="number"
+          value={editFields.minStock}
+          onChange={handleEditFieldChange}
+          fullWidth
+          margin="normal"
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Button onClick={() => setUpdateModalOpen(false)} sx={{ mr: 1 }}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleUpdateSave}>Save</Button>
+        </Box>
+      </Box>
+    </Modal>
     </Box>
   );
 }

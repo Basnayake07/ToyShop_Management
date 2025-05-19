@@ -19,7 +19,7 @@ const OrdersTable = ({ orders, onRowClick }) => {
       headerName: "Date",
       width: 120,
       renderCell: (params) => (
-        <span>{new Date(params.value).toISOString().split('T')[0]}</span>
+        <span>{new Date(params.value).toLocaleDateString()}</span>
       ),
     },
     { field: "totalPrice", headerName: "Total Price (Rs.)", width: 120 },

@@ -227,25 +227,56 @@ useEffect(() => {
   };
 
 
-  return (
-    <div style={{ display: "flex", backgroundColor: "#f0f0f0" }}>
-      {/* Sidebar */}
-      <Sidebar />
-    <div className="product-container">
-     
+ return (
+  <div style={{ display: "flex", minHeight: "100vh", background: "#f6f8fa" }}>
+    {/* Sidebar */}
+    <Sidebar />
+
+    <div className="product-container" style={{
+      flex: 1,
+      padding: "32px 40px",
+      background: "#fff",
+      borderRadius: "16px",
+      margin: "32px auto",
+      boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+      maxWidth: 1200
+    }}>
+      <h1 style={{
+        fontSize: "2.5rem",
+        fontWeight: 700,
+        marginBottom: 24,
+        color: "	#111111",
+        letterSpacing: 1
+      }}>
+        Products
+      </h1>
+
       {/* Top Bar */}
-      <div className="product-header">
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        marginBottom: 24,
+        flexWrap: "wrap"
+      }}>
         <input
           type="text"
           placeholder="Search"
           className="search-box"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            padding: "8px 12px",
+            borderRadius: 6,
+            border: "1px solid #ccc",
+            minWidth: 180
+          }}
         />
         <select
           className="filter-dropdown"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
+          style={{ padding: "8px", borderRadius: 6, border: "1px solid #ccc" }}
         >
           <option value="">Category</option>
           <option value="Birthday Deco">Birthday Deco</option>
@@ -258,6 +289,7 @@ useEffect(() => {
           className="filter-dropdown"
           value={selectedAgeGroup}
           onChange={(e) => setSelectedAgeGroup(e.target.value)}
+          style={{ padding: "8px", borderRadius: 6, border: "1px solid #ccc" }}
         >
           <option value="">Age-wise</option>
           <option value="0-2 months">0-2 months</option>
@@ -265,63 +297,60 @@ useEffect(() => {
           <option value="4-8 years">4-8 years</option>
           <option value="12+ years">12+ years</option>
         </select>
-        <button className="export-btn">⬇ Export</button>
-        <Button onClick={handleOpen} className="add-btn">+ Add New Product</Button> 
-        
-
-
-        <button className="order-btn" onClick={handleOpenOrderModal} >
-          📝 Set Order</button>
-
-
-
-
-         {/*  <div style={{ height: 500, width: "100%" }}>
-          <DataGrid
-          rows={products}
-          columns={[
-            { field: "productID", headerName: "ID", width: 80 },
-            { field: "name", headerName: "Product Name", width: 200 },
-            { field: "wholesalePrice", headerName: "Price", width: 100 },
-            { field: "stock", headerName: "Stock", width: 100 }
-          ]}
-          checkboxSelection
-          onRowSelectionModelChange={handleProductSelection}
-          getRowId={(row) => row.productID}
-      />
-      </div> */}
-
-
-
-
-        <OrderModal
-          isOpen={orderModalOpen}
-          onClose={handleCloseOrderModal}
-          selectedProducts={selectedProducts}
-          setSelectedProducts={setSelectedProducts}
-          setRowSelectionModel={setRowSelectionModel}
-         
-         
-        />
+        <Button
+          onClick={handleOpen}
+          variant="contained"
+          color="primary"
+          style={{ fontWeight: 600 }}
+        >
+          + Add New Product
+        </Button>
+        <Button
+          onClick={handleOpenOrderModal}
+          variant="outlined"
+          color="secondary"
+          style={{ fontWeight: 600 }}
+        >
+          📝 Place Order
+        </Button>
+        <button className="export-btn" style={{
+          padding: "8px 16px",
+          borderRadius: 6,
+          border: "1px solid #1976d2",
+          background: "#e3f2fd",
+          color: "#1976d2",
+          fontWeight: 600
+        }}>
+          ⬇ Export
+        </button>
       </div>
 
-
+      {/* Product Table */}
       <ProductTable
-      products={filteredProducts}
-      handleMoreSettings={handleMoreSettings}
-      onSelectionChange={setSelectedProducts} />
+        products={filteredProducts}
+        handleMoreSettings={handleMoreSettings}
+        onSelectionChange={setSelectedProducts}
+      />
 
+      {/* Order Modal */}
+      <OrderModal
+        isOpen={orderModalOpen}
+        onClose={handleCloseOrderModal}
+        selectedProducts={selectedProducts}
+        setSelectedProducts={setSelectedProducts}
+        setRowSelectionModel={setRowSelectionModel}
+      />
 
       {/* Modal for Add Product Form */}
       <Modal open={open} onClose={handleClose}>
         <Box sx={{ ...modalStyle }}>
-          <AddProductForm onClose={handleClose} onProductAdded={handleProductAdded} /> {/* Render AddProductForm inside the modal */}
+          <AddProductForm onClose={handleClose} onProductAdded={handleProductAdded} />
         </Box>
       </Modal>
     </div>
-    </div>
-  );
-};
+  </div>
+);
+}
 
 
 // Modal styling

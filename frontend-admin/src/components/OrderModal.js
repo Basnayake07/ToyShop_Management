@@ -36,35 +36,40 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
       .catch(error => console.error("Error fetching customers:", error));
   }, []);
 
-
-  useEffect(() => {
-    if (selectedCustomer) {
-      //console.log("Selected Customer:", selectedCustomer); // Debugging: Check selected customer details
- 
-      // Update product prices based on customer type
-      const updatedProducts = selectedProducts.map((product) => {  
-        const price = (() => {
-         
-          return selectedCustomer.cusType === "Wholesale"
-            ? product.wholesalePrice
-            : product.retailPrice;
-        })();
- 
-        console.log(
-          `Customer Type: ${selectedCustomer.cusType}, Product ID: ${product.productID}, Price: ${price}`
-        ); // Debugging: Check calculated price based on customer type
- 
+useEffect(() => {
+  if (selectedCustomer && selectedProducts.length > 0) {
+    // For each product, fetch discount if wholesale, else set retail price
+    const updatePrices = async () => {
+      const updatedProducts = await Promise.all(selectedProducts.map(async (product, idx) => {
+        let price = selectedCustomer.cusType === "Wholesale" ? product.wholesalePrice : product.retailPrice;
+        let discountPercent = 0;
+        if (selectedCustomer.cusType === "Wholesale") {
+          try {
+            const today = new Date().toISOString().split('T')[0];
+            const qty = quantities[product.productID] || 0;
+            const res = await axios.get(
+              `http://localhost:8081/api/discounts?productID=${product.productID}&qty=${qty}&date=${today}`
+            );
+            discountPercent = res.data.discount_percent || 0;
+            if (discountPercent > 0) {
+              price = (product.wholesalePrice * (1 - discountPercent / 100)).toFixed(2);
+            }
+          } catch (err) {
+            console.error("Error fetching discount:", err);
+          }
+        }
         return {
           ...product,
-          price, // Add or update the price field
+          price: parseFloat(price),
+          discountPercent,
         };
-      });
- 
-      //console.log("Updated Products:", updatedProducts); // Debugging: Check updated products with new prices
-      setSelectedProducts(updatedProducts); // Update the selectedProducts state
-    }
-  }, [selectedCustomer]);
-
+      }));
+      setSelectedProducts(updatedProducts);
+    };
+    updatePrices();
+  }
+  // eslint-disable-next-line
+}, [selectedCustomer, selectedProducts.length]);
 
   useEffect(() => {
     if (isOpen) {
@@ -144,7 +149,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
 
 
     // Validate quantity
-    if (value < 1) {
+    if (value < 0) {
       console.log(`Validation failed: Quantity must be at least 1 for product ${product.productID}`);
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -154,7 +159,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
     }
 
 
-    if (value > product.quantity) {
+    if (value > product.quantity - product.minStock) {
       console.log(`Stock validation failed for product ${product.productID}. Entered: ${value}, Available: ${product.stock}`);
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -200,12 +205,12 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
 
   // Calculate Total Price
   const calculateTotal = () => {
-    return selectedProducts.reduce((total, product) => {
-      const quantity = quantities[product.productID] || 0;
-      const price = selectedCustomer?.cusType === "Wholesale" ? product.wholesalePrice : product.retailPrice;
-      return total + price * quantity;
-    }, 0).toFixed(2);
-  };
+  return selectedProducts.reduce((total, product) => {
+    const quantity = quantities[product.productID] || 0;
+    // Always use the current product.price, which may be discounted
+    return total + (product.price || 0) * quantity;
+  }, 0).toFixed(2);
+};
 
 
   // Redirect to Customer Registration & Save State
@@ -248,6 +253,36 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
       setRowSelectionModel([]); // Reset the selection
     }
   };
+
+  const fetchDiscountAndUpdatePrice = async (index, value) => {
+  const product = selectedProducts[index];
+  let price = selectedCustomer?.cusType === "Wholesale" ? product.wholesalePrice : product.retailPrice;
+  let discountPercent = 0;
+
+  if (selectedCustomer?.cusType === "Wholesale") {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const res = await axios.get(
+        `http://localhost:8081/api/discounts?productID=${product.productID}&qty=${value}&date=${today}`
+      );
+      discountPercent = res.data.discount_percent || 0;
+      if (discountPercent > 0) {
+        price = (product.wholesalePrice * (1 - discountPercent / 100)).toFixed(2);
+      }
+    } catch (err) {
+      console.error("Error fetching discount:", err);
+    }
+  }
+
+  // Update product price and discountPercent in selectedProducts
+  const updatedProducts = [...selectedProducts];
+  updatedProducts[index] = {
+    ...product,
+    price: parseFloat(price),
+    discountPercent,
+  };
+  setSelectedProducts(updatedProducts);
+};
 
 
     /* // Set a special flag
@@ -305,6 +340,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
     const orderData = {
       cusID: selectedCustomer.cusID, // Use cusID from the selected customer
       adminID,
+      cusType: selectedCustomer.cusType,
       products: selectedProducts.map((product) => ({
         productID: product.productID,
         quantity: quantities[product.productID] || 0,
@@ -389,6 +425,7 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
         onChange={(e) => {
           const value = parseInt(e.target.value) || 0;
           updateQuantity(index, value);
+          fetchDiscountAndUpdatePrice(index, value);
         }}
         error={!!errors[product.productID]}
         helperText={errors[product.productID] || ""}
@@ -399,6 +436,8 @@ const OrderModal = ({ isOpen, onClose, selectedProducts, setSelectedProducts, se
           (quantities[product.productID] || 0) *
           (product.price || 0)
         ).toFixed(2)}
+        {selectedCustomer?.cusType === "Wholesale" && product.discountPercent
+          ? ` (Discount: ${product.discountPercent}%)`: ""}
       </span>
       <IconButton onClick={() => removeProduct(index)}>
         <FaTrash />
@@ -433,11 +472,12 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 400,
+  maxHeight: "80vh",         
+  overflowY: "auto",         
   bgcolor: "white",
   boxShadow: 24,
   p: 4,
 };
-
 
 export default OrderModal;
 
