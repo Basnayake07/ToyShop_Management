@@ -17,12 +17,31 @@ export const invoiceController = {
         const lastID = result[0].lastID || 0;
         const nextInvoiceID = `IN${lastID + 1}`;
   
-        // Insert the invoice into the `invoice` table
-        const invoiceQuery = `
-          INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, discount)
-          VALUES (?, ?, NOW(), ?, ?, ?)
-        `;
-        await req.db.execute(invoiceQuery, [nextInvoiceID, orderID, receivedAmount, creditAmount || 0, discount || 0]);
+// Calculate totalDiscount from orderItems
+const [orderItemsForDiscount] = await req.db.execute(
+  "SELECT price, discountPrice, quantity FROM orderItems WHERE orderID = ?",
+  [orderID]
+);
+let totalDiscount = 0;
+orderItemsForDiscount.forEach(item => {
+  if (item.discountPrice !== null) {
+    totalDiscount += (item.price - item.discountPrice) * item.quantity;
+  }
+});
+
+// Insert the invoice into the `invoice` table, now including totalDiscount
+const invoiceQuery = `
+  INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, discount, totalDiscount)
+  VALUES (?, ?, NOW(), ?, ?, ?, ?)
+`;
+await req.db.execute(invoiceQuery, [
+  nextInvoiceID,
+  orderID,
+  receivedAmount,
+  creditAmount || 0,
+  discount || 0,
+  totalDiscount.toFixed(2)
+]);
   
         // Update the payment status in the `orders` table
         const updateOrderQuery = `
@@ -39,7 +58,7 @@ export const invoiceController = {
           FROM orderItems
           WHERE orderID = ?
         `;
-        const [orderItems] = await req.db.execute(orderItemsQuery, [orderID]);
+        const [orderItemsForInventory] = await req.db.execute(orderItemsQuery, [orderID]);
   
         // Update inventory for each product
         const updateInventoryQuery = `
@@ -47,7 +66,7 @@ export const invoiceController = {
           SET quantity = quantity - ?
           WHERE productID = ? AND quantity >= ?
         `;
-        for (const item of orderItems) {
+        for (const item of orderItemsForInventory) {
           const { productID, quantity } = item;
   
           // Ensure sufficient stock exists
@@ -191,8 +210,50 @@ updateInvoicePayment: async (req, res) => {
     console.error("Error updating invoice payment:", error);
     res.status(500).json({ message: "Error updating invoice payment", error });
   }
-}
+},
 
 
+};
+
+export const createInvoiceForOrder = async (db, orderID) => {
+  // Generate a new invoice ID
+  const getLastInvoiceIDQuery = `
+    SELECT MAX(CAST(SUBSTRING(invoiceID, 3) AS UNSIGNED)) AS lastID
+    FROM invoice
+  `;
+  const [result] = await db.execute(getLastInvoiceIDQuery);
+  const lastID = result[0].lastID || 0;
+  const nextInvoiceID = `IN${lastID + 1}`;
+
+  // Calculate totalDiscount from orderItems
+  const [orderItemsForDiscount] = await db.execute(
+    "SELECT price, discountPrice, quantity FROM orderItems WHERE orderID = ?",
+    [orderID]
+  );
+  let totalDiscount = 0;
+  orderItemsForDiscount.forEach(item => {
+    if (item.discountPrice !== null) {
+      totalDiscount += (item.price - item.discountPrice) * item.quantity;
+    }
+  });
+
+  // Get order details for amounts
+  const [orderRows] = await db.execute(
+    "SELECT totalPrice FROM orders WHERE orderID = ?",
+    [orderID]
+  );
+  if (orderRows.length === 0) throw new Error("Order not found");
+
+  // Insert the invoice
+  const invoiceQuery = `
+    INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, discount, totalDiscount)
+    VALUES (?, ?, NOW(), ?, 0, 0, ?)
+  `;
+  await db.execute(invoiceQuery, [
+    nextInvoiceID,
+    orderID,
+    orderRows[0].totalPrice,
+    totalDiscount.toFixed(2)
+  ]);
 };
 

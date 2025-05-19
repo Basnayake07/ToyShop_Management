@@ -56,7 +56,8 @@ getAllProducts: async (req, res) => {
                 p.ageGrp, 
                 i.quantity, 
                 i.wholesalePrice,
-                i.retailPrice
+                i.retailPrice,
+                i.minStock
                 
             FROM 
                 product p

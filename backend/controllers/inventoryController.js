@@ -30,7 +30,7 @@ export const searchProducts = async (req, res) => {
 // Fetch existing inventories
 export const getInventory = async (req, res) => {
     try {
-        const [inventory] = await pool.query("SELECT * FROM inventory");
+        const [inventory] = await pool.query("SELECT * FROM inventory WHERE availability = 1");
         return res.status(200).json(inventory);
     } catch (error) {
         console.error('Error fetching inventory:', error);
@@ -83,6 +83,55 @@ export const addInventory = async (req, res) => {
         return res.status(200).json({ message: 'Inventory added successfully' });
     } catch (error) {
         console.error('Error:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+export const softDeleteBatch = async (req, res) => {
+    const { batchID, productID } = req.params;
+    try {
+        const updateQuery = `UPDATE inventory SET availability = 0 WHERE batchID = ? AND productID = ?`;
+        await pool.query(updateQuery, [batchID, productID]);
+        return res.status(200).json({ message: 'Batch marked as unavailable.' });
+    } catch (error) {
+        console.error('Error soft deleting batch:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+export const updateInventory = async (req, res) => {
+    const { batchID, productID } = req.params;
+    const { quantity, cost, wholesalePrice, retailPrice, minStock } = req.body;
+
+    // Validate input
+    if (
+        quantity === undefined ||
+        cost === undefined ||
+        wholesalePrice === undefined ||
+        retailPrice === undefined ||
+        minStock === undefined
+    ) {
+        return res.status(400).json({ message: 'All fields are required!' });
+    }
+
+    // Validate numerical fields
+    const numericFields = { quantity, cost, wholesalePrice, retailPrice, minStock };
+    for (const [key, value] of Object.entries(numericFields)) {
+        if (isNaN(value) || value < 0) {
+            return res.status(400).json({ message: `${key} must be a valid positive number!` });
+        }
+    }
+
+    try {
+        const updateQuery = `
+            UPDATE inventory
+            SET quantity = ?, cost = ?, wholesalePrice = ?, retailPrice = ?, minStock = ?
+            WHERE batchID = ? AND productID = ?
+        `;
+        await pool.query(updateQuery, [quantity, cost, wholesalePrice, retailPrice, minStock, batchID, productID]);
+        return res.status(200).json({ message: 'Inventory updated successfully.' });
+    } catch (error) {
+        console.error('Error updating inventory:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };

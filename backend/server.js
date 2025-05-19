@@ -11,6 +11,7 @@ import supplierLoginRoutes from './routes/supplierLoginRoute.js';
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import returnsRoutes from "./routes/returnsRoutes.js"; 
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import discountRoutes from "./routes/discountRoutes.js";
 import db from './config/db.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -89,6 +90,10 @@ app.use("/api", returnsRoutes);
 
 // Register the dashboard routes
 app.use("/api", dashboardRoutes);
+
+// Register the discount routes
+app.use("/api/discounts", discountRoutes);
+
 
 app.listen(8081, () => {
   console.log('listening on port 8081');
