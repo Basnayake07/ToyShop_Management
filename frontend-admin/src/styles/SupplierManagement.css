@@ -1,0 +1,225 @@
+/* SupplierManagement.css */
+
+/* Main Layout */
+.page-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7f9fc;
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+}
+
+.main-paper {
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #4568dc, #6a5cd0);
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* Tabs Styling */
+.tabs-container {
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+  font-weight: 500;
+  text-transform: none;
+  min-height: 64px;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  background-color: rgba(106, 92, 208, 0.04);
+}
+
+.tab-panel {
+  width: 100%;
+}
+
+.tab-content {
+  padding: 24px;
+}
+
+/* Form Styling */
+.form-paper {
+  padding: 24px;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.section-title {
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #6a5cd0;
+  padding-bottom: 8px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.subsection-title {
+  margin-top: 16px;
+  font-weight: 500;
+  color: #555;
+}
+
+.phone-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  background-color: #f9fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 3px solid #6a5cd0;
+}
+
+.product-field {
+  flex: 3;
+}
+
+.quantity-field, .cost-field {
+  flex: 2;
+}
+
+.delete-button {
+  color: #f44336;
+}
+
+.delete-button:disabled {
+  color: #bdbdbd;
+}
+
+.add-button {
+  text-transform: none;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  color: #6a5cd0;
+  border-color: #6a5cd0;
+}
+
+.add-button:hover {
+  background-color: rgba(106, 92, 208, 0.04);
+}
+
+.total-section {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #4caf50;
+}
+
+.submit-button {
+  margin-top: 16px;
+  height: 46px;
+  text-transform: none;
+  font-weight: 500;
+  background: linear-gradient(135deg, #4568dc, #6a5cd0);
+  box-shadow: 0 4px 10px rgba(106, 92, 208, 0.25);
+}
+
+.submit-button:hover {
+  background: linear-gradient(135deg, #4568dc, #5a4dbe);
+  box-shadow: 0 6px 15px rgba(106, 92, 208, 0.3);
+}
+
+/* Table Styling */
+.table-paper {
+  padding: 24px;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.table-container {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.suppliers-table {
+  min-width: 650px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-header {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: #444;
+}
+
+.table-row {
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: #f9fafc;
+}
+
+.table-row td {
+  border-bottom: 1px solid #eaedf3;
+  padding: 16px;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 40px;
+  color: #757575;
+  background-color: #f9fafc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.supplier-search {
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+  }
+  
+  .product-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .delete-button {
+    align-self: flex-end;
+  }
+  
+  .tab {
+    min-height: 56px;
+  }
+}

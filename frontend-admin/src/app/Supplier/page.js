@@ -3,13 +3,36 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, TextField, Button, IconButton, Table, TableHead, TableRow,
-  TableCell, TableBody, Typography, Paper, Grid, Divider, Autocomplete
+  TableCell, TableBody, Typography, Paper, Grid, Tabs, Tab, Autocomplete
 } from '@mui/material';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaUserPlus, FaShoppingCart, FaUsers } from 'react-icons/fa';
 import axios from 'axios';
 import Sidebar from '@/components/Sidebar';
+import '@/styles/SupplierManagement.css';
 
-const SupplierForm = () => {
+const TabPanel = (props) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`supplier-tabpanel-${index}`}
+      aria-labelledby={`supplier-tab-${index}`}
+      {...other}
+      className="tab-panel"
+    >
+      {value === index && (
+        <Box className="tab-content">
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+};
+
+const SupplierManagement = () => {
+  const [tabValue, setTabValue] = useState(0);
   const [supplier, setSupplier] = useState({
     name: '',
     email: '',
@@ -45,6 +68,10 @@ const SupplierForm = () => {
       console.error('Error fetching suppliers:', err);
       setSuppliersList([]);
     }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   const handleSupplierChange = (e) => {
@@ -94,7 +121,6 @@ const SupplierForm = () => {
     calculateTotal(updatedItems);
   };
 
- 
   const calculateTotal = (items) => {
     const total = items.reduce((sum, item) => {
       const quantity = parseFloat(item.quantity) || 0;
@@ -111,7 +137,7 @@ const SupplierForm = () => {
         return;
       }
   
-      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('You are not authorized to perform this action.');
         return;
@@ -122,7 +148,7 @@ const SupplierForm = () => {
         supplier,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the request
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -130,163 +156,268 @@ const SupplierForm = () => {
       fetchSuppliers();
       alert('Supplier saved successfully!');
       setSupplier({ name: '', email: '', password: '', phoneNumbers: [''] });
+      setTabValue(2); // Switch to supplier list tab
     } catch (error) {
-      console.error('Error saving supplier:', error);
-      alert(error.response?.data?.message || 'Failed to save supplier.');
+      if (error.response && error.response.status === 403) {
+        alert(error.response.data.message);
+      } else {
+        console.error('Error saving supplier:', error);
+        alert(error.response?.data?.message || 'Failed to save supplier.');
+      }
     }
   };
 
   const handleSavePurchaseOrder = async () => {
     try {
+      if (!purchaseOrder.suppID) {
+        alert('Please select a supplier.');
+        return;
+      }
+
+      if (purchaseOrder.items.some(item => !item.productID || !item.quantity || !item.cost)) {
+        alert('All product fields must be filled.');
+        return;
+      }
+
       await axios.post('http://localhost:8081/api/purchase-orders', purchaseOrder);
       fetchSuppliers();
       alert('Purchase Order saved successfully!');
       setPurchaseOrder({ suppID: '', items: [{ productID: '', quantity: '', cost: '' }], total: 0, status: 'Pending' });
     } catch (error) {
-      console.error('Error saving purchase order:', error);
-      alert('Failed to save purchase order.');
+      if (error.response && error.response.status === 403) {
+        alert(error.response.data.message); 
+      } else {
+        console.error('Error saving purchase order:', error);
+        alert('Failed to save purchase order.');
+      }
     }
   };
 
-  
   return (
-    <Box sx={{ display: 'flex' }}>
+    <div className="page-container">
       <Sidebar />
-      <Grid container spacing={4}>
-        {/* Supplier Form */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Supplier Details
-            </Typography>
-            <TextField label="Name" name="name" value={supplier.name} onChange={handleSupplierChange} fullWidth margin="normal" />
-            <TextField label="Email" name="email" value={supplier.email} onChange={handleSupplierChange} fullWidth margin="normal" />
-            <TextField label="Password" name="password" type="password" value={supplier.password} onChange={handleSupplierChange} fullWidth margin="normal" />
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>Phone Numbers</Typography>
-            {supplier.phoneNumbers.map((phone, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <TextField
-                  label={`Phone ${index + 1}`}
-                  value={phone}
-                  onChange={(e) => handlePhoneChange(index, e.target.value)}
-                  fullWidth
+      <div className="content-area">
+        <Paper className="main-paper">
+          <Typography variant="h4" className="page-title">
+            Supplier Management
+          </Typography>
+
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            className="tabs-container"
+            variant="fullWidth"
+          >
+            <Tab icon={<FaUserPlus />} label="Add Supplier" className="tab" />
+            <Tab icon={<FaShoppingCart />} label="Create Purchase Order" className="tab" />
+            <Tab icon={<FaUsers />} label="Supplier List" className="tab" />
+          </Tabs>
+
+          {/* Add Supplier Form */}
+          <TabPanel value={tabValue} index={0}>
+            <Paper className="form-paper">
+              <Typography variant="h5" className="section-title">
+                Add New Supplier
+              </Typography>
+              <div className="form-container">
+                <TextField 
+                  label="Supplier Name" 
+                  name="name" 
+                  value={supplier.name} 
+                  onChange={handleSupplierChange} 
+                  fullWidth 
+                  className="form-field"
                 />
-                <IconButton onClick={() => removePhoneNumber(index)} disabled={supplier.phoneNumbers.length === 1}>
-                  <FaTrash />
-                </IconButton>
-              </Box>
-            ))}
-            <Button onClick={addPhoneNumber} variant="outlined" sx={{ mb: 2 }}>
-              + Add Phone Number
-            </Button>
+                <TextField 
+                  label="Email" 
+                  name="email" 
+                  value={supplier.email} 
+                  onChange={handleSupplierChange} 
+                  fullWidth 
+                  className="form-field"
+                />
+                <TextField 
+                  label="Password" 
+                  name="password" 
+                  type="password" 
+                  value={supplier.password} 
+                  onChange={handleSupplierChange} 
+                  fullWidth 
+                  className="form-field"
+                />
+                
+                <Typography variant="subtitle1" className="subsection-title">
+                  Phone Numbers
+                </Typography>
+                
+                {supplier.phoneNumbers.map((phone, index) => (
+                  <div key={index} className="phone-row">
+                    <TextField
+                      label={`Phone ${index + 1}`}
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(index, e.target.value)}
+                      fullWidth
+                    />
+                    <IconButton 
+                      onClick={() => removePhoneNumber(index)} 
+                      disabled={supplier.phoneNumbers.length === 1}
+                      className="delete-button"
+                    >
+                      <FaTrash />
+                    </IconButton>
+                  </div>
+                ))}
+                
+                <Button 
+                  onClick={addPhoneNumber} 
+                  variant="outlined" 
+                  className="add-button"
+                >
+                  + Add Phone Number
+                </Button>
 
-            <Button variant="contained" color="primary" fullWidth onClick={handleSaveSupplier}>
-              Save Supplier
-            </Button>
-          </Paper>
-
-
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  fullWidth 
+                  onClick={handleSaveSupplier}
+                  className="submit-button"
+                >
+                  Save Supplier
+                </Button>
+              </div>
+            </Paper>
+          </TabPanel>
 
           {/* Purchase Order Form */}
-          <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Purchase Order
-      </Typography>
+          <TabPanel value={tabValue} index={1}>
+            <Paper className="form-paper">
+              <Typography variant="h5" className="section-title">
+                Create Purchase Order
+              </Typography>
+              <div className="form-container">
+                <Autocomplete
+                  options={supplierOptions}
+                  getOptionLabel={(option) => option.label}
+                  onChange={(event, newValue) => {
+                    setPurchaseOrder((prev) => ({
+                      ...prev,
+                      suppID: newValue ? newValue.suppID : "",
+                    }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField 
+                      {...params} 
+                      label="Search Supplier ID or Name" 
+                      fullWidth 
+                      className="form-field"
+                    />
+                  )}
+                  className="supplier-search"
+                />
 
-      {/* Searchable Supplier ID Field */}
-      <Autocomplete
-        options={supplierOptions}
-        getOptionLabel={(option) => option.label}
-        onChange={(event, newValue) => {
-          setPurchaseOrder((prev) => ({
-            ...prev,
-            suppID: newValue ? newValue.suppID : "",
-          }));
-        }}
-        renderInput={(params) => (
-          <TextField {...params} label="Search Supplier ID or Name" fullWidth margin="normal" />
-        )}
-      />
+                <Typography variant="subtitle1" className="subsection-title">
+                  Order Items
+                </Typography>
 
-      {purchaseOrder.items.map((item, index) => (
-        <Grid container spacing={2} key={index} sx={{ mb: 1 }}>
-          <Grid item xs={4}>
-            <TextField
-              label="Product ID"
-              value={item.productID}
-              onChange={(e) => handleItemChange(index, "productID", e.target.value)}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={3}>
-            <TextField
-              label="Quantity"
-              value={item.quantity}
-              onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={3}>
-            <TextField
-              label="Cost"
-              value={item.cost}
-              onChange={(e) => handleItemChange(index, "cost", e.target.value)}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={2}>
-            <IconButton onClick={() => removeItem(index)}>
-              <FaTrash />
-            </IconButton>
-          </Grid>
-        </Grid>
-      ))}
-
-      <Button onClick={addItem} variant="outlined" startIcon={<FaPlus />} sx={{ mb: 2 }}>
-        Add Product
-      </Button>
-
-      <Typography variant="h6">Total Amount: Rs. {purchaseOrder.total.toFixed(2)}</Typography>
-      <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handleSavePurchaseOrder}>
-        Save Purchase Order
-      </Button>
-    </Paper>
-  
-        </Grid>
-
-        {/* Supplier Table */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Supplier List
-            </Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Supplier ID</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Phone Numbers</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {suppliersList.map((sup) => (
-                  <TableRow key={sup.suppID} >
-                    <TableCell>{sup.suppID}</TableCell>
-                    <TableCell>{sup.name}</TableCell>
-                    <TableCell>{sup.email}</TableCell>
-                    <TableCell>{sup.phoneNumbers}</TableCell>
-                  </TableRow>
+                {purchaseOrder.items.map((item, index) => (
+                  <div key={index} className="product-row">
+                    <TextField
+                      label="Product ID"
+                      value={item.productID}
+                      onChange={(e) => handleItemChange(index, "productID", e.target.value)}
+                      className="product-field"
+                    />
+                    <TextField
+                      label="Quantity"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
+                      className="quantity-field"
+                    />
+                    <TextField
+                      label="Cost (Rs.)"
+                      value={item.cost}
+                      onChange={(e) => handleItemChange(index, "cost", e.target.value)}
+                      className="cost-field"
+                    />
+                    <IconButton 
+                      onClick={() => removeItem(index)}
+                      className="delete-button"
+                      disabled={purchaseOrder.items.length === 1}
+                    >
+                      <FaTrash />
+                    </IconButton>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </Paper>
-        </Grid>
-      </Grid>
 
-  
-    </Box>
+                <Button 
+                  onClick={addItem} 
+                  variant="outlined" 
+                  startIcon={<FaPlus />} 
+                  className="add-button"
+                >
+                  Add Product
+                </Button>
+
+                <div className="total-section">
+                  <Typography variant="h6">
+                    Total Amount: Rs. {purchaseOrder.total.toFixed(2)}
+                  </Typography>
+                </div>
+
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  fullWidth 
+                  onClick={handleSavePurchaseOrder}
+                  className="submit-button"
+                >
+                  Save Purchase Order
+                </Button>
+              </div>
+            </Paper>
+          </TabPanel>
+
+          {/* Supplier List */}
+          <TabPanel value={tabValue} index={2}>
+            <Paper className="table-paper">
+              <Typography variant="h5" className="section-title">
+                Supplier List
+              </Typography>
+              <div className="table-container">
+                {suppliersList.length > 0 ? (
+                  <Table className="suppliers-table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell className="table-header">Supplier ID</TableCell>
+                        <TableCell className="table-header">Name</TableCell>
+                        <TableCell className="table-header">Email</TableCell>
+                        <TableCell className="table-header">Phone Numbers</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {suppliersList.map((sup) => (
+                        <TableRow key={sup.suppID} className="table-row">
+                          <TableCell>{sup.suppID}</TableCell>
+                          <TableCell>{sup.name}</TableCell>
+                          <TableCell>{sup.email}</TableCell>
+                          <TableCell>{Array.isArray(sup.phoneNumbers) ? sup.phoneNumbers.join(', ') : sup.phoneNumbers}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="no-data-message">
+                    No suppliers found. Add a supplier from the 'Add Supplier' tab.
+                  </div>
+                )}
+              </div>
+            </Paper>
+          </TabPanel>
+        </Paper>
+      </div>
+    </div>
   );
 };
 
-export default SupplierForm;
+export default SupplierManagement;
