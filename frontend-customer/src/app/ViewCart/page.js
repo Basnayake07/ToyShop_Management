@@ -41,6 +41,11 @@ const handleRemoveItem = (productID) => {
     router.push('/HomePage');
   };
 
+  // Go to product details
+  const handleCardClick = () => {
+    router.push(`/ViewProduct?id=${id}`);
+  };
+
   // Handle checkout
   const handleCheckout = () => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -50,7 +55,7 @@ const handleRemoveItem = (productID) => {
   // Render empty cart
   if (cartItems.length === 0) {
     return (
-      <div className="cart-container">
+      <div className="cart-container" >
         <Paper className="empty-cart" elevation={0}>
           <ShoppingCartOutlinedIcon className="empty-cart-icon" />
           <Typography variant="h5" className="empty-cart-message">
@@ -95,10 +100,11 @@ const handleRemoveItem = (productID) => {
                 <div className="cart-items-container">
                 {cartItems.map(item => (
                   <CartItem 
-                    key={item.productID} // Use productID as the unique key
+                    key={item.id || item.productID} // Use productID as the unique key
                     item={item} 
                     onQuantityChange={handleQuantityChange}
                     onRemove={handleRemoveItem}
+                    onCardClick={() => router.push(`/HomePage`)} // Navigate to product details
                   />
                 ))}
                 </div>

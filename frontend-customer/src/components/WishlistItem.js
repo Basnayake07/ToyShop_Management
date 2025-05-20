@@ -12,7 +12,7 @@ import { useCustomer } from '@/contexts/customerContext';
 import '@/styles/WishlistItem.css';
 
 
-const WishlistItem = ({ item, onRemove }) => {
+const WishlistItem = ({ item, onRemove, onAddToCart, onCardClick }) => {
   const { cusType } = useCustomer();
   const { id, productID, image, name, retailPrice, wholesalePrice, rating, availability = 'In Stock' } = item;
   const { addToCart } = useCart();
@@ -86,29 +86,30 @@ const getDirectImageUrl = (url) => {
     }
   };
 
-  // Fetch the wishlist for the current user
-  const getWishlist = async () => {
-    const token = sessionStorage.getItem('jwtToken');
-    if (!token) {
-      throw new Error('No token found. Please log in.');
-    }
+ // Fetch the wishlist for the current user
+const getWishlist = async () => {
+  const token = sessionStorage.getItem('jwtToken');
+  if (!token) {
+    console.warn('User is not logged in. Returning an empty wishlist.');
+    return []; // Return an empty array if no token is found
+  }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch wishlist');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching wishlist:', error.message);
-      throw error;
+  try {
+    const response = await fetch('http://localhost:8082/api/wishlist/getWishlist', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch wishlist');
     }
-  };
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching wishlist:', error.message);
+    throw error;
+  }
+};
 
   // Clear all items from the wishlist
   const clearWishlist = async () => {
@@ -152,6 +153,8 @@ const getDirectImageUrl = (url) => {
     console.log(`${name} added to cart!`);
   };
 
+  
+
   const openConfirmationDialog = () => {
     setOpenDialog(true);
   };
@@ -167,7 +170,9 @@ const getDirectImageUrl = (url) => {
   const isAvailable = availability === 'In Stock';
 
   return (
+    <div className="wishlist-item-card" onClick={onCardClick}>
     <div className="wishlist-item">
+      
       <div className="wishlist-item-image">
         <Image
           src={getDirectImageUrl(image)}
@@ -226,6 +231,7 @@ const getDirectImageUrl = (url) => {
         title="Confirm Remove from Wishlist"
         message="Are you sure you want to remove the item from the wishlist?"
       />
+    </div>
     </div>
   );
 };

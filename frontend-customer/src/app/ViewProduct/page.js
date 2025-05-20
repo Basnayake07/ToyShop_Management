@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Header } from "@/components/Header";
 import { getProductDetails } from '@/services/productService';
+import { useCart } from '@/contexts/cartContext';
 import Image from 'next/image';
 import Comment from '@/components/Comment';
 import StarRating from '@/components/StarRating';
@@ -17,11 +18,10 @@ const ViewProduct = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
+   const { addToCart } = useCart();
   const router = useRouter();
 
   const shareUrl = 'https://Toyshop.com/ViewProduct?id=${productID}';
@@ -76,10 +76,13 @@ const ViewProduct = () => {
     setQuantity(q => type === 'increase' ? q + 1 : Math.max(1, q - 1));
   };
 
-  const handleAddToCart = () => {
-    // Implement your add to cart logic here
-    alert(`Added ${quantity} x ${product.name} (${selectedColor}, ${selectedSize}) to cart!`);
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart(product);
+    console.log(`${name} added to cart!`);
   };
+
+
 
   const openShareModal = () => setIsShareModalOpen(true);
 const closeShareModal = () => setIsShareModalOpen(false);

@@ -22,9 +22,9 @@ const ProductCard = ({ product }) => {
     const checkWishlistStatus = async () => {
       const token = sessionStorage.getItem('jwtToken');
       if (!token) {
-        console.error('No token found. Please log in.');
-        return;
-      }
+      setIsWishlisted(false);
+      return;
+    }
 
       try {
         const response = await fetch(`${API_BASE_URL}`, {
@@ -147,7 +147,7 @@ const ProductCard = ({ product }) => {
 
         <div className="product-rating-row">
           <StarRating rating={rating} />
-          <span className="sold-count">{sold_count} sold</span>
+          <span className="sold-count">{product.sold_count} sold</span>
         </div>
 
         <Button

@@ -1,169 +1,161 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { getCustomerOrders } from '@/services/userService';
-import AlertComponent from '@/components/AlertComponent';
-import { Header } from '@/components/Header';
+import { Header } from "@/components/Header";
 import Footer from '@/components/Footer';
 import { Sidebar } from '@/components/Sidebar';
-import '@/styles/OrderHistory.css';
+import OrderCard from '@/components/OrderCard';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { getOrders } from '@/services/orderService';
+import '@/styles/MyOrders.css';
 
-const OrderHistory = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [alert, setAlert] = useState({ severity: '', title: '', message: '' });
-
-  useEffect(() => {
-    setLoading(true);
-    getCustomerOrders()
-      .then((data) => {
-        setOrders(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setAlert({ severity: 'error', title: 'Error', message: error.message });
-        setLoading(false);
-      });
-  }, []);
-
-  const closeAlert = () => setAlert({ severity: '', title: '', message: '' });
-
-  const getStatusColor = (status) => {
-    const statusMap = {
-      'Delivered': 'success',
-      'Processing': 'info',
-      'Shipped': 'primary',
-      'Cancelled': 'error',
-      'Pending': 'warning'
-    };
-    return statusMap[status] || 'info';
-  };
-
-  const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+// TabPanel component to handle tab content display
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
 
   return (
-    <div className="order-history-container">
-      <Header />
-      <main className="order-history-main">
-        <div className="sidebar-section">
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`orders-tabpanel-${index}`}
+      aria-labelledby={`orders-tab-${index}`}
+      className="orders-tabpanel"
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+// Function to get props for accessibility
+function a11yProps(index) {
+  return {
+    id: `orders-tab-${index}`,
+    'aria-controls': `orders-tabpanel-${index}`,
+  };
+}
+
+const MyOrders = () => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState([]);
+  const [completedOrders, setCompletedOrders] = useState([]);
+  const [toBeReviewedOrders, setToBeReviewedOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  // Fetch orders data from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const orders = await getOrders();
+
+        // Categorize orders based on their status
+        const pending = orders.filter(order => order.deliveryStatus === 'Pending');
+        const completed = orders.filter(order => order.deliveryStatus === 'Completed');
+        const toReview = orders.filter(order => order.deliveryStatus === 'Delivered');
+
+        setPendingOrders(pending);
+        setCompletedOrders(completed);
+        setToBeReviewedOrders(toReview);
+      } catch (error) {
+        console.error('Error fetching orders:', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  return (
+    <div className="myorders-all">
+      <Header/>
+      <main className="main-myorders-content">
+        <div className="myorders-sidebar-section">
           <Sidebar />
         </div>
-        <div className="orders-content">
-          <div className="page-header">
-            <h2 className="page-title">Your Order History</h2>
-            <p className="page-subtitle">Track and manage all your previous orders</p>
-          </div>
-
-          {loading ? (
-            <div className="loading-container">
-              <div className="loader"></div>
-              <p>Loading your orders...</p>
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="no-orders">
-              <div className="empty-state-icon">📦</div>
-              <h3>No Orders Found</h3>
-              <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
-              <button className="shop-now-btn">Browse Products</button>
-            </div>
-          ) : (
-            <div className="order-history">
-              {orders.map(order => (
-                <div key={order.orderID} className="order-card">
-                  <div className="order-header">
-                    <div className="order-details-col">
-                      <div className="order-id">
-                        <span className="label">Order ID:</span>
-                        <span className="value">{order.orderID}</span>
-                      </div>
-                      <div className="order-date">
-                        <span className="label">Ordered on:</span>
-                        <span className="value">{formatDate(order.orderDate)}</span>
-                      </div>
-                    </div>
-                    <div className="order-status-col">
-                      <div className={`status-badge ${getStatusColor(order.payStatus)}`}>
-                        {order.payStatus}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="order-items-section">
-                    <h3 className="items-heading">Items in your order</h3>
-                    <ul className="order-items-list">
-                      {order.items.map(item => (
-                        <li key={item.orderItemID} className="order-item">
-                          <div className="order-item-image">
-                            {item.image ? (
-                              <Image
-                                src={item.image}
-                                alt={item.productName}
-                                width={56}
-                                height={56}
-                                className="product-image"
-                              />
-                            ) : (
-                              <div className="placeholder-image">
-                                <span>No image</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="order-item-details">
-                            <span className="order-item-name">{item.productName}</span>
-                            <div className="order-item-meta">
-                              <span className="quantity">Qty: {item.quantity}</span>
-                              <span className="price">Rs. {item.price.toLocaleString()}</span>
-                            </div>
-                          </div>
-                        </li>
+        
+        <div className="myorders-main-section">
+          <Typography variant="h4" component="h1" className="myorders-title">
+            My Orders
+          </Typography>
+          
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs 
+                value={activeTab} 
+                onChange={handleTabChange} 
+                aria-label="order tabs"
+                className="order-tabs"
+              >
+                <Tab label={`Pending (${pendingOrders.length})`} {...a11yProps(0)} />
+                <Tab label={`Completed (${completedOrders.length})`} {...a11yProps(1)} />
+                <Tab label={`To Be Reviewed (${toBeReviewedOrders.length})`} {...a11yProps(2)} />
+              </Tabs>
+            </Box>
+            
+            {loading ? (
+              <Box className="loading-container">
+                <CircularProgress />
+                <Typography>Loading orders...</Typography>
+              </Box>
+            ) : (
+              <>
+                <TabPanel value={activeTab} index={0}>
+                  {pendingOrders.length > 0 ? (
+                    <div className="orders-grid">
+                      {pendingOrders.map(order => (
+                        <OrderCard key={order.orderID} order={order} />
                       ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="order-footer">
-                    <div className="order-summary">
-                      <div className="summary-item">
-                        <span>Items:</span>
-                        <span>{order.items.reduce((total, item) => total + item.quantity, 0)}</span>
-                      </div>
-                      <div className="summary-item total">
-                        <span>Total Amount:</span>
-                        <span>Rs. {order.totalPrice.toLocaleString()}</span>
-                      </div>
                     </div>
-                    <div className="order-actions">
-                      <button className="action-btn details-btn">View Details</button>
-                      <button className="action-btn invoice-btn">Download Invoice</button>
+                  ) : (
+                    <Typography className="no-orders-message">No pending orders</Typography>
+                  )}
+                </TabPanel>
+                
+                <TabPanel value={activeTab} index={1}>
+                  {completedOrders.length > 0 ? (
+                    <div className="orders-grid">
+                      {completedOrders.map(order => (
+                        <OrderCard key={order.orderID} order={order} />
+                      ))}
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                  ) : (
+                    <Typography className="no-orders-message">No completed orders</Typography>
+                  )}
+                </TabPanel>
+                
+                <TabPanel value={activeTab} index={2}>
+                  {toBeReviewedOrders.length > 0 ? (
+                    <div className="orders-grid">
+                      {toBeReviewedOrders.map(order => (
+                        <OrderCard key={order.orderID} order={order} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Typography className="no-orders-message">No orders to review</Typography>
+                  )}
+                </TabPanel>
+              </>
+            )}
+          </Box>
         </div>
       </main>
       <Footer />
-      {alert.message && (
-        <AlertComponent
-          severity={alert.severity}
-          title={alert.title}
-          message={alert.message}
-          onClose={closeAlert}
-          sx={{ width: '350px', position: 'fixed', top: '80px', right: '24px', zIndex: 9999 }}
-        />
-      )}
     </div>
   );
 };
 
-export default OrderHistory;
+export default MyOrders;

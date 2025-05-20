@@ -19,7 +19,7 @@ const getDirectImageUrl = (url) => {
   return url;
 };
 
-const CartItem = ({ item, onRemove, onQuantityChange }) => {
+const CartItem = ({ item, onRemove, onQuantityChange, onCardClick }) => {
   const { cusType } = useCustomer();
   const { id, productID, image, name, wholesalePrice, retailPrice, quantity = 1 } = item;
   const [itemQuantity, setItemQuantity] = useState(quantity);
@@ -34,6 +34,8 @@ const CartItem = ({ item, onRemove, onQuantityChange }) => {
     onRemove && onRemove(productID);
   };
 
+  
+
   // Determine the price based on cusType
   const price = cusType === 'wholesale' ? wholesalePrice : retailPrice;
   const formattedPrice = !isNaN(price) ? parseFloat(price).toFixed(2) : 'N/A';
@@ -41,7 +43,7 @@ const CartItem = ({ item, onRemove, onQuantityChange }) => {
 
 
     return (
-      <div className="cart-item">
+      <div className="cart-item" onClick={onCardClick}>
         <div className="cart-item-image">
           <Image
             src={getDirectImageUrl(image)}

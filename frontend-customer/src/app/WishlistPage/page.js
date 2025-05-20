@@ -150,6 +150,11 @@ const WishlistPage = () => {
     }
   };
 
+  // to view product details
+  const handleCardClick = (id) => {
+  router.push(`/ViewProduct?id=${id}`);
+};
+
   // Handle continue shopping
   const handleExploreCatalog = () => {
     router.push('/HomePage');
@@ -271,6 +276,7 @@ const WishlistPage = () => {
                 item={item} 
                 onRemove={handleRemoveItem}
                 onAddToCart={handleAddToCart}
+                onCardClick={() => handleCardClick(item.id)}
               />
             ))}
           </div>
