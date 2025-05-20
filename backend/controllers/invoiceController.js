@@ -31,15 +31,14 @@ orderItemsForDiscount.forEach(item => {
 
 // Insert the invoice into the `invoice` table, now including totalDiscount
 const invoiceQuery = `
-  INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, discount, totalDiscount)
-  VALUES (?, ?, NOW(), ?, ?, ?, ?)
+  INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, totalDiscount)
+  VALUES (?, ?, NOW(), ?, ?, ?)
 `;
 await req.db.execute(invoiceQuery, [
   nextInvoiceID,
   orderID,
   receivedAmount,
   creditAmount || 0,
-  discount || 0,
   totalDiscount.toFixed(2)
 ]);
   
@@ -97,7 +96,7 @@ await req.db.execute(invoiceQuery, [
     try {
       // Fetch invoice details
       const invoiceQuery = `
-        SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount, i.discount,
+        SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount,
                o.totalPrice, o.payStatus, o.deliveryStatus, o.adminID, c.name AS customerName, c.email AS customerEmail
         FROM invoice i
         LEFT JOIN orders o ON i.orderID = o.orderID
@@ -130,7 +129,7 @@ await req.db.execute(invoiceQuery, [
 getAllInvoices: async (req, res) => {
   try {
     const query = `
-      SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount, i.discount,
+      SELECT i.invoiceID, i.orderID, i.issue_date, i.received_amount, i.credit_amount,
              o.totalPrice, o.payStatus, o.deliveryStatus, c.name AS customerName, c.email AS customerEmail
       FROM invoice i
       LEFT JOIN orders o ON i.orderID = o.orderID
@@ -246,7 +245,7 @@ export const createInvoiceForOrder = async (db, orderID) => {
 
   // Insert the invoice
   const invoiceQuery = `
-    INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, discount, totalDiscount)
+    INSERT INTO invoice (invoiceID, orderID, issue_date, received_amount, credit_amount, totalDiscount)
     VALUES (?, ?, NOW(), ?, 0, 0, ?)
   `;
   await db.execute(invoiceQuery, [
