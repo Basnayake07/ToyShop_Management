@@ -66,3 +66,23 @@ export const getCustomerOrders = async () => {
     throw new Error(error.response?.data?.message || 'Failed to fetch customer orders');
   }
 };
+
+export const addOrUpdateReview = async ({ productId, rating, comment, orderId }) => {
+  try {
+    const token = sessionStorage.getItem('jwtToken');
+    const response = await axios.post(
+      'http://localhost:8082/api/review/addReview',
+      { productId, rating, comment, orderId},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error adding/updating review:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to add/update review');
+  }
+};
