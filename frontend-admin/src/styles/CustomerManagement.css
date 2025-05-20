@@ -1,0 +1,159 @@
+/* CustomerManagement.css */
+/* Main Layout */
+.customer-management-container {
+display: flex;
+height: 100vh;
+width: 100%;
+background-color: #f5f7fa;
+overflow: hidden;
+}
+.main-content {
+flex: 1;
+padding: 24px;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+}
+.page-title {
+margin-bottom: 24px !important;
+color: #333;
+font-weight: 600 !important;
+border-bottom: 2px solid #e0e0e0;
+padding-bottom: 12px;
+}
+/* Notification */
+.notification {
+margin-bottom: 20px;
+}
+/* Tabs */
+.tabs-container {
+display: flex;
+flex-direction: column;
+background-color: #fff;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+overflow: hidden;
+height: calc(100vh - 120px);
+}
+.tabs-header {
+border-bottom: 1px solid #e0e0e0;
+}
+.custom-tabs {
+background-color: #f8f9fb;
+}
+.tab-panel {
+flex: 1;
+overflow-y: auto;
+}
+.tab-content {
+padding: 24px;
+height: 100%;
+}
+/* Registration Form */
+.registration-form {
+max-width: 600px;
+margin: 0 auto;
+padding: 24px;
+background-color: #fff;
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.form-title {
+margin-bottom: 24px !important;
+color: #444;
+font-weight: 500 !important;
+text-align: center;
+}
+.submit-button {
+margin-top: 24px !important;
+padding: 12px !important;
+text-transform: none !important;
+font-weight: 500 !important;
+font-size: 16px !important;
+}
+/* Customer Management Table */
+.customer-management {
+display: flex;
+flex-direction: column;
+height: 100%;
+}
+.table-controls {
+display: flex;
+justify-content: space-between;
+margin-bottom: 16px;
+flex-wrap: wrap;
+gap: 16px;
+}
+.search-field {
+min-width: 250px;
+}
+.action-controls {
+display: flex;
+align-items: center;
+gap: 16px;
+flex-wrap: wrap;
+}
+.filter-control {
+min-width: 150px !important;
+}
+.action-buttons {
+display: flex;
+gap: 8px;
+}
+.action-button {
+text-transform: none !important;
+}
+.data-grid-container {
+flex: 1;
+overflow: hidden;
+border-radius: 8px;
+box-shadow: none !important;
+border: 1px solid #e0e0e0;
+}
+.customer-grid {
+border: none !important;
+height: 100% !important;
+}
+/* Modal */
+.update-modal {
+border-radius: 12px !important;
+border: none !important;
+}
+.modal-title {
+margin-bottom: 24px !important;
+color: #333;
+font-weight: 500 !important;
+text-align: center;
+border-bottom: 1px solid #f0f0f0;
+padding-bottom: 16px;
+}
+.modal-button {
+margin-top: 24px !important;
+padding: 12px !important;
+text-transform: none !important;
+font-weight: 500 !important;
+font-size: 16px !important;
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+.tabs-container {
+height: auto;
+}
+.table-controls {
+flex-direction: column;
+align-items: stretch;
+}
+.search-field {
+width: 100%;
+}
+.action-controls {
+justify-content: space-between;
+}
+.filter-control {
+flex: 1;
+}
+.action-buttons {
+flex: 1;
+justify-content: flex-end;
+}
+}

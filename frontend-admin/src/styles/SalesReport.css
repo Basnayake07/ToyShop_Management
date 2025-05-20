@@ -1,0 +1,226 @@
+/* SalesReport.css */
+/* Page Layout */
+.sales-report-page {
+display: flex;
+flex-direction: column;
+min-height: 100vh;
+background-color: #f8f9fa;
+font-family: 'Roboto', sans-serif;
+}
+.salesreport-content {
+display: flex;
+flex: 1;
+}
+.salesreport-sidebar {
+width: 280px;
+flex-shrink: 0;
+transition: width 0.3s ease;
+background: #fff;
+box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+z-index: 10;
+}
+.salesreport-main {
+flex: 1;
+padding: 32px;
+margin-top: 70px;
+background-color: #f8f9fa;
+}
+/* Header Styling */
+.salesreport-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 32px;
+padding-bottom: 16px;
+border-bottom: 1px solid #e0e0e0;
+}
+.page-title {
+color: #0a2f6e !important;
+font-weight: 700 !important;
+position: relative;
+margin-bottom: 0 !important;
+letter-spacing: 0.5px;
+}
+.page-title::after {
+content: '';
+position: absolute;
+left: 0;
+bottom: -12px;
+width: 60px;
+height: 4px;
+background-color: #0a2f6e;
+border-radius: 2px;
+}
+.salesreport-actions {
+display: flex;
+gap: 16px;
+}
+.action-button {
+text-transform: none !important;
+border-radius: 8px !important;
+padding: 8px 16px !important;
+font-weight: 500 !important;
+transition: all 0.2s ease !important;
+}
+.action-button:first-child {
+border-color: #4caf50 !important;
+color: #4caf50 !important;
+}
+.action-button:first-child:hover {
+background-color: rgba(76, 175, 80, 0.1) !important;
+}
+.action-button:last-child {
+border-color: #f44336 !important;
+color: #f44336 !important;
+}
+.action-button:last-child:hover {
+background-color: rgba(244, 67, 54, 0.1) !important;
+}
+/* Summary Cards */
+.sales-summary {
+margin-bottom: 32px;
+}
+.summary-card {
+height: 100%;
+border-radius: 12px !important;
+box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+overflow: hidden;
+border: none !important;
+}
+.summary-card:hover {
+transform: translateY(-6px);
+box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12) !important;
+}
+.summary-card:nth-child(1) .MuiCardContent-root {
+border-left: 4px solid #2196f3;
+}
+.summary-card:nth-child(2) .MuiCardContent-root {
+border-left: 4px solid #ff9800;
+}
+.summary-card:nth-child(3) .MuiCardContent-root {
+border-left: 4px solid #4caf50;
+}
+.summary-card .MuiCardContent-root {
+padding: 24px !important;
+}
+.summary-card .MuiTypography-h5 {
+font-weight: 700 !important;
+font-size: 1.8rem !important;
+margin-top: 8px !important;
+}
+.summary-card .MuiTypography-gutterBottom {
+font-size: 0.95rem !important;
+text-transform: uppercase;
+letter-spacing: 1px;
+font-weight: 500 !important;
+}
+/* Table Filters */
+.table-filters {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 24px;
+background-color: #fff;
+padding: 16px 24px;
+border-radius: 12px;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.timeframe-select {
+width: 220px;
+}
+.timeframe-select .MuiOutlinedInput-root {
+border-radius: 8px;
+}
+/* Table Styling */
+.sales-table-container {
+margin-top: 16px;
+border-radius: 12px !important;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+overflow: hidden;
+border: none !important;
+}
+.sales-table {
+min-width: 750px;
+}
+.table-header {
+background-color: #f3f6f9 !important;
+font-weight: 600 !important;
+color: #334155 !important;
+padding: 16px !important;
+font-size: 0.9rem !important;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.even-row {
+background-color: #fff;
+}
+.odd-row {
+background-color: #fafbfc;
+}
+.even-row td, .odd-row td {
+padding: 16px !important;
+font-size: 0.95rem !important;
+}
+/* Loading State */
+.loading-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 16px;
+padding: 64px 0;
+}
+.loading-container .MuiCircularProgress-root {
+color: #0a2f6e;
+}
+/* Responsive Design */
+@media (max-width: 992px) {
+.salesreport-main {
+padding: 24px;
+}
+}
+@media (max-width: 768px) {
+.salesreport-content {
+flex-direction: column;
+}
+.salesreport-sidebar {
+min-width: 100%;
+height: auto;
+}
+.salesreport-header {
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+}
+.salesreport-actions {
+width: 100%;
+justify-content: flex-start;
+}
+.table-filters {
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+}
+.timeframe-select {
+width: 100%;
+}
+.sales-table-container {
+overflow-x: auto;
+}
+}
+@media (max-width: 576px) {
+.salesreport-main {
+padding: 16px;
+margin-top: 60px;
+}
+.page-title {
+font-size: 1.5rem !important;
+}
+.salesreport-actions {
+gap: 8px;
+}
+.summary-card .MuiTypography-h5 {
+font-size: 1.5rem !important;
+}
+}
