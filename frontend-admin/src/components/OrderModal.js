@@ -159,7 +159,7 @@ useEffect(() => {
     }
 
 
-    if (value > product.quantity - product.minStock) {
+    if (value > product.quantity) {
       console.log(`Stock validation failed for product ${product.productID}. Entered: ${value}, Available: ${product.stock}`);
       setErrors((prevErrors) => ({
         ...prevErrors,
