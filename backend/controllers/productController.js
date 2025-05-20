@@ -59,13 +59,26 @@ getAllProducts: async (req, res) => {
                 i.wholesalePrice,
                 i.retailPrice,
                 i.minStock
-                
             FROM 
                 product p
-            LEFT JOIN 
-                inventory i
-            ON 
-                p.productID = i.productID
+            JOIN (
+                SELECT 
+                    inv.productID,
+                    inv.quantity,
+                    inv.wholesalePrice,
+                    inv.retailPrice,
+                    inv.minStock
+                FROM inventory inv
+                JOIN (
+                    SELECT 
+                        productID,
+                        MIN(receivedDate) AS firstDate
+                    FROM inventory
+                    WHERE quantity > 0
+                    GROUP BY productID
+                ) first_batches ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
+                WHERE inv.quantity > 0
+            ) i ON p.productID = i.productID;
         `;
 
         const [products] = await req.db.execute(query);

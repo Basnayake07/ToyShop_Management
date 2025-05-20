@@ -72,7 +72,7 @@ ALTER TABLE customer
 MODIFY password varchar(100) NULL;
 
 CREATE TABLE orders (
-    orderID VARCHAR(6) PRIMARY KEY AUTO_INCREMENT,
+    orderID VARCHAR(6) PRIMARY KEY,
     cusID varchar(10),
     orderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     totalPrice DECIMAL(10,2),
@@ -92,7 +92,7 @@ CREATE TABLE orderitems (
     price DECIMAL(10,2),
     discountPrice DECIMAL (5,2) NULL,
     FOREIGN KEY (orderID) REFERENCES orders(orderID),
-    FOREIGN KEY (productID) REFERENCES products(productID)
+    FOREIGN KEY (productID) REFERENCES product(productID)
 );
 
 CREATE TABLE purchaseOrder (
