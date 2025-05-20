@@ -187,14 +187,7 @@ const downloadInvoice = (orderDetails, calculateTotal, receivedAmount, discount,
           fullWidth
           margin="normal"
         />
-        <TextField
-          label="Discount"
-          type="number"
-          value={discount}
-          onChange={(e) => setDiscount(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+        
         <TextField
           label="Credit Amount"
           type="number"
