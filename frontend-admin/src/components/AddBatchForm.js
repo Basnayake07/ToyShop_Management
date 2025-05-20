@@ -46,9 +46,14 @@ const AddBatchForm = ({ onClose, onBatchAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token')
       const response = await axios.post("http://localhost:8081/api/inventory", batch, {
-        headers: { "Content-Type": "application/json" }
-    }); 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
       alert("Inventory batch added successfully!");
       console.log(response.data);
       onClose();

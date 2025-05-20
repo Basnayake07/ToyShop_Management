@@ -56,7 +56,7 @@ export const addInventory = async (req, res) => {
     }
 
     // Validate numerical fields (should not contain letters)
-    const numericFields = { quantity, cost, wholesalePrice, retailPrice, minStock, minProfitMargin };
+    const numericFields = { quantity, cost, wholesalePrice, retailPrice, minStock };
     for (const [key, value] of Object.entries(numericFields)) {
         if (isNaN(value) || value < 0) {
             return res.status(400).json({ message: `${key} must be a valid positive number!` });
