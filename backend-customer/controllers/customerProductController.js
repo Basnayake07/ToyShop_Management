@@ -11,17 +11,32 @@ export const getAllProducts = async (req, res) => {
                 p.category, 
                 p.description, 
                 p.image, 
-                p.ageGrp, 
+                p.ageGrp,
+                p.productRating, 
+                i.quantity, 
                 i.wholesalePrice,
                 i.retailPrice,
-                p.productRating AS rating,
-                COALESCE(SUM(oi.quantity), 0) AS sold_count
+                i.minStock
             FROM 
                 product p
-            LEFT JOIN 
-                inventory i ON p.productID = i.productID
-            LEFT JOIN 
-                orderitems oi ON p.productID = oi.productID
+            JOIN (
+                SELECT 
+                    inv.productID,
+                    inv.quantity,
+                    inv.wholesalePrice,
+                    inv.retailPrice,
+                    inv.minStock
+                FROM inventory inv
+                JOIN (
+                    SELECT 
+                        productID,
+                        MIN(receivedDate) AS firstDate
+                    FROM inventory
+                    WHERE quantity > 0
+                    GROUP BY productID
+                ) first_batches ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
+                WHERE inv.quantity > 0
+            ) i ON p.productID = i.productID;
         `;
 
         const queryParams = [];
@@ -38,18 +53,18 @@ export const getAllProducts = async (req, res) => {
         }
 
                   // Add GROUP BY for all non-aggregated columns
-          query += `
-              GROUP BY 
-                  p.productID, 
-                  p.name, 
-                  p.category, 
-                  p.description, 
-                  p.image, 
-                  p.ageGrp, 
-                  i.wholesalePrice,
-                  i.retailPrice,
-                  p.productRating
-          `;
+          // query += `
+          //     GROUP BY 
+          //         p.productID, 
+          //         p.name, 
+          //         p.category, 
+          //         p.description, 
+          //         p.image, 
+          //         p.ageGrp, 
+          //         i.wholesalePrice,
+          //         i.retailPrice,
+          //         p.productRating
+          // `;
 
         const [products] = await req.db.execute(query, queryParams);
         res.status(200).json(products);
