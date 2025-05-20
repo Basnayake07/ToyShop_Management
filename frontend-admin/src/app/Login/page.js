@@ -64,6 +64,7 @@ function Login() {
                     if (res.data.message === 'Login successful') {
                         localStorage.setItem('token', res.data.token);
                         localStorage.setItem('adminID', res.data.adminID);
+                        console.log('login token ',res.data.token);
                         if (isClient && router) {
                             router.push('/Dashboard');
                         }

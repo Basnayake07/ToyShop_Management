@@ -49,7 +49,7 @@ const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
     { field: "quantity", headerName: "Stock", width: 80 },
     { field: "category", headerName: "Category", width: 130 },
     {
-      field: "rating",
+      field: "productRating",
       headerName: "Rating",
       width: 80,
       renderCell: (params) => (
@@ -59,16 +59,7 @@ const ProductTable = ({ products, handleMoreSettings,onSelectionChange }) => {
         </div>
       ),
     },
-    {
-      field: "actions",
-      headerName: "More",
-      width: 80,
-      renderCell: (params) => (
-        <div style={{ cursor: "pointer" }} onClick={() => handleMoreSettings(params.row.productID)}>
-          &#x22EE;
-        </div>
-      ),
-    },
+    
   ];
 
   const handleRowSelectionChange = (ids) => {

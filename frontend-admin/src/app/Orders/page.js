@@ -238,30 +238,44 @@ const handleUpdateDeliveryStatus = async () => {
 
         {/* Items Table */}
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Order Items
-        </Typography>
-        <TableContainer component={Paper} sx={{ mb: 3 }}>
-          <Table size="small">
-            <TableHead sx={{ backgroundColor: "#f1f3f5" }}>
-              <TableRow>
-                <TableCell>Product ID</TableCell>
-                <TableCell>Product Name</TableCell>
-                <TableCell align="right">Quantity</TableCell>
-                <TableCell align="right">Price (Rs.)</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {selectedOrder.items.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.productID}</TableCell>
-                  <TableCell>{item.productName}</TableCell>
-                  <TableCell align="right">{item.quantity}</TableCell>
-                  <TableCell align="right">{item.price}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+  Order Items
+</Typography>
+<TableContainer component={Paper} sx={{ mb: 3 }}>
+  <Table size="small">
+    <TableHead sx={{ backgroundColor: "#f1f3f5" }}>
+      <TableRow>
+        <TableCell>Product ID</TableCell>
+        <TableCell>Product Name</TableCell>
+        <TableCell align="right">Quantity</TableCell>
+        <TableCell align="right">Price (Rs.)</TableCell>
+        <TableCell align="right">Rating</TableCell>
+        <TableCell>Comment</TableCell>
+        <TableCell>Review Date</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {selectedOrder.items.map((item, index) => (
+        <TableRow key={index}>
+          <TableCell>{item.productID}</TableCell>
+          <TableCell>{item.productName}</TableCell>
+          <TableCell align="right">{item.quantity}</TableCell>
+          <TableCell align="right">{item.price}</TableCell>
+          <TableCell align="right">
+            {item.customerRating ? item.customerRating : "-"}
+          </TableCell>
+          <TableCell>
+            {item.comment ? item.comment : "-"}
+          </TableCell>
+          <TableCell>
+            {item.reviewCreatedAt
+              ? new Date(item.reviewCreatedAt).toLocaleDateString()
+              : "-"}
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
 
         {/* Footer */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
