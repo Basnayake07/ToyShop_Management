@@ -113,10 +113,16 @@ export default function InventoryTable({ rows = [], onAdd, onUpdate }) {
   if (!row) return;
   if (!window.confirm(`Are you sure you want to delete batch ${row.batchID} for product ${row.productID}?`)) return;
   try {
+    const token = localStorage.getItem('token');
     await axios.put(
-      `http://localhost:8081/api/inventory/batch/${row.batchID}/${row.productID}/delete`
+      `http://localhost:8081/api/inventory/batch/${row.batchID}/${row.productID}/delete`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
-    // Refresh inventory after deletion
     fetchInventory();
     setSelectedRow(null);
   } catch (error) {
@@ -149,9 +155,16 @@ const handleEditFieldChange = (e) => {
 const handleUpdateSave = async () => {
   if (!selectedRow) return;
   try {
+    const token = localStorage.getItem('token');
+    console.log('token',token);
     await axios.put(
       `http://localhost:8081/api/inventory/batch/${selectedRow.batchID}/${selectedRow.productID}`,
-      editFields
+      editFields,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     fetchInventory();
     setUpdateModalOpen(false);
