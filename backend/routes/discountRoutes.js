@@ -1,5 +1,12 @@
 import express from "express";
 const router = express.Router();
+import {
+  addWholesaleDiscount,
+  updateWholesaleDiscount,
+  deleteWholesaleDiscount,
+  getAllWholesaleDiscounts
+} from '../controllers/discountController.js';
+import { verifyAdmin } from '../middleware/authAdmin.js';
 import pool from "../config/db.js"; 
 
 router.get("/", async (req, res) => {
@@ -18,5 +25,18 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Error fetching discount", error: err.message });
   }
 });
+
+// Route to add a new wholesale discount
+router.post('/', addWholesaleDiscount);
+
+// Route to update an existing wholesale discount
+router.put('/:id',verifyAdmin, updateWholesaleDiscount);
+
+// Route to delete a wholesale discount
+router.delete('/:id', verifyAdmin, deleteWholesaleDiscount);
+
+//  view all discounts
+router.get('/all', getAllWholesaleDiscounts);
+
 
 export default router;

@@ -144,9 +144,12 @@ export const orderController = {
   
         // Fetch order items
         const orderItemsQuery = `
-          SELECT oi.productID, p.name AS productName, oi.quantity, oi.price
+          SELECT oi.productID, p.name AS productName, oi.quantity, oi.price,
+          pr.customerRating,pr.comment,pr.createdAt AS reviewCreatedAt
           FROM orderItems oi
           LEFT JOIN product p ON oi.productID = p.productID
+          LEFT JOIN product_review pr 
+            ON pr.productID = oi.productID 
           WHERE oi.orderID = ?
         `;
         const [orderItems] = await req.db.execute(orderItemsQuery, [orderID]);
