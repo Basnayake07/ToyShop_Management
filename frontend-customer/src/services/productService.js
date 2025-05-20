@@ -16,7 +16,7 @@ export const getProductCards = async () => {
 // Fetch products by search query
 export const searchProducts = async (searchQuery) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products?search=${searchQuery}`);
+    const response = await axios.get(`${API_BASE_URL}/products/search?search=${encodeURIComponent(searchQuery)}`);
     return response.data;
   } catch (error) {
     console.error('Error searching products:', error);
@@ -24,10 +24,10 @@ export const searchProducts = async (searchQuery) => {
   }
 };
 
-// Fetch products by category
+
 export const getProductsByCategory = async (category) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products?category=${category}`);
+    const response = await axios.get(`${API_BASE_URL}/products/category?category=${encodeURIComponent(category)}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching products by category:', error);
