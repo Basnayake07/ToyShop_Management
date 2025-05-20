@@ -61,23 +61,17 @@ getAllProducts: async (req, res) => {
                 i.minStock
             FROM 
                 product p
-            JOIN (
-                SELECT 
-                    inv.productID,
-                    inv.quantity,
-                    inv.wholesalePrice,
-                    inv.retailPrice,
-                    inv.minStock
-                FROM inventory inv
-                JOIN (
+            LEFT JOIN (
+                SELECT * FROM (
                     SELECT 
-                        productID,
-                        MIN(receivedDate) AS firstDate
-                    FROM inventory
-                    WHERE quantity > 0
-                    GROUP BY productID
-                ) first_batches ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
-                WHERE inv.quantity > 0
+                        *,
+                        ROW_NUMBER() OVER (PARTITION BY productID ORDER BY receivedDate ASC) as rn
+                    FROM 
+                        inventory
+                    WHERE 
+                        quantity > 0
+                ) ranked_inventory
+                WHERE rn = 1
             ) i ON p.productID = i.productID;
         `;
 

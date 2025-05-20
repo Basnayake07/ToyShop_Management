@@ -14,7 +14,7 @@ const AddProductForm = ({ onClose, onProductAdded }) => {
     const [preview, setPreview] = useState(null); // Image preview
 
     const categories = ["Birthday Deco", "Soft Toys", "Educational Toys", "Christmas Deco", "Other Toys"]; // Example categories
-    const ageGroups = ["0-2 months", "1-3 years", "4-8 years", "12+ years"]; // Example age groups
+    const ageGroups = ["0-12 months", "1-4 years", "4-8 years", "12+ years"]; // Example age groups
 
     const handleChange = (e) => {
         const { name, value } = e.target;

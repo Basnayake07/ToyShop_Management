@@ -203,9 +203,10 @@ useEffect(() => {
   const handleClose = () => setOpen(false); // Function to close the modal
 
 
-  const handleProductAdded = () => {
-    fetchProducts(); // Fetch the latest products after a new product is added
-  };
+  const handleProductAdded = async () => {
+  await fetchProducts(); // Fetch the latest products after a new product is added
+  
+};
 
 
   const handleOpenOrderModal = () => setOrderModalOpen(true);
@@ -283,8 +284,8 @@ useEffect(() => {
           style={{ padding: "8px", borderRadius: 6, border: "1px solid #ccc" }}
         >
           <option value="">Age-wise</option>
-          <option value="0-2 months">0-12 months</option>
-          <option value="1-3 years">1-4 years</option>
+          <option value="0-12 months">0-12 months</option>
+          <option value="1-4 years">1-4 years</option>
           <option value="4-8 years">4-8 years</option>
           <option value="12+ years">12+ years</option>
         </select>
