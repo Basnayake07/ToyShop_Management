@@ -43,8 +43,8 @@ export const loginCustomer = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '5h' }
     );
-
-    res.status(200).json({ message: 'Login successful', token, cusID: customer.cusID });
+    console.log('login custype:', customer.cusType);
+    res.status(200).json({ message: 'Login successful', token, cusID: customer.cusID, cusType: customer.cusType });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

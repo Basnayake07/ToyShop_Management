@@ -8,12 +8,14 @@ import { Button, TextField } from "@mui/material";
 import Footer from "@/components/Footer";
 import loginImg1 from "@/images/img_login.jpeg";
 import { HeaderAuth } from "@/components/HeaderAuth";
+import { useCustomer } from '@/contexts/customerContext';
 import "@/styles/SignIn.css";
 
 const Login = () => {
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const router = useRouter();
+  const { setCusType } = useCustomer();
 
   const handleInput = (event) => {
     setValues((prev) => ({ ...prev, [event.target.id]: event.target.value }));
@@ -37,6 +39,8 @@ const Login = () => {
       // Store cusType and token
       sessionStorage.setItem("cusType", cusType);
       sessionStorage.setItem("jwtToken", token);
+      setCusType(cusType);
+      console.log("cusType stored in sessionStorage:", cusType);
 
       console.log("Token stored in sessionStorage:", token);
       //localStorage.setItem("cusType", cusType);

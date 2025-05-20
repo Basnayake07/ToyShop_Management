@@ -80,29 +80,38 @@ export const getProductDetails = async (req, res) => {
   try {
     // Query to fetch product details
     const productQuery = `
-      SELECT 
-          p.productID AS id,
-          p.name AS name,
-          p.category AS category,
-          p.description AS description,
-          p.image AS image,
-          p.ageGrp AS ageGroup,
-          i.wholesalePrice AS wholesalePrice,
-          i.retailPrice AS retailPrice,
-          p.productRating AS rating
-      FROM product p
-      LEFT JOIN inventory i ON p.productID = i.productID
-      WHERE p.productID = ?
-      GROUP BY 
-      p.productID, 
-      p.name, 
-      p.category, 
-      p.description, 
-      p.image, 
-      p.ageGrp, 
-      i.wholesalePrice,
-      i.retailPrice,
-      p.productRating
+     SELECT 
+    p.productID AS id,
+    p.name AS name,
+    p.category AS category,
+    p.description AS description,
+    p.image AS image,
+    p.ageGrp AS ageGroup,
+    i.wholesalePrice AS wholesalePrice,
+    i.retailPrice AS retailPrice,
+    i.quantity AS quantity,
+    p.productRating AS rating
+FROM product p
+LEFT JOIN (
+    SELECT 
+        inv.productID,
+        inv.wholesalePrice,
+        inv.retailPrice,
+        inv.receivedDate,
+        inv.quantity
+    FROM inventory inv
+    JOIN (
+        SELECT 
+            productID,
+            MIN(receivedDate) AS firstDate
+        FROM inventory
+        WHERE quantity > 0
+        GROUP BY productID
+    ) first_batches
+    ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
+    WHERE inv.quantity > 0
+) i ON p.productID = i.productID
+WHERE p.productID = ?;
     `;
 
     const [productRows] = await pool.query(productQuery, [id]);

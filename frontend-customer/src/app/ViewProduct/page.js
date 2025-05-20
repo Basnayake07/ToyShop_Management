@@ -13,6 +13,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { HiOutlineShare } from "react-icons/hi";
 import ShareModal from '@/components/ShareModal';
 import '@/styles/ViewProduct.css';
+import { useCustomer } from '@/contexts/customerContext';
 
 const ViewProduct = () => {
   const [product, setProduct] = useState(null);
@@ -21,6 +22,7 @@ const ViewProduct = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const {cusType} = useCustomer();
    const { addToCart } = useCart();
   const router = useRouter();
 
@@ -30,11 +32,13 @@ const ViewProduct = () => {
 
   const searchParams = useSearchParams();
   const productID = searchParams.get('id');
+  
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         const productData = await getProductDetails(productID);
+        
         setProduct(productData);
         setReviews(productData.reviews || []);
         // Set defaults if attributes exist
@@ -88,17 +92,30 @@ const ViewProduct = () => {
 const closeShareModal = () => setIsShareModalOpen(false);
 
   const handleBuyNow = () => {
+  // Determine price based on cusType
+  const buyNowPrice =
+    cusType && cusType.toLowerCase() === 'wholesale'
+      ? product.wholesalePrice
+      : product.retailPrice;
+
   const productData = {
     id: product.id,
     name: product.name,
-    price: product.retailPrice,
+    price: buyNowPrice,
     quantity,
-    
   };
   localStorage.removeItem('cartItems');
   const queryString = new URLSearchParams(productData).toString();
   router.push(`/Checkout?${queryString}`);
-};  
+};
+
+// Place this line here, before return:
+  const price = product
+    ? (cusType === 'Wholesale'
+        ? product.wholesalePrice
+        : product.retailPrice)
+    : 0;
+    console.log('cusType:', cusType);
 
   return (
     <div className="view-product">
@@ -120,7 +137,7 @@ const closeShareModal = () => setIsShareModalOpen(false);
           </div>
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>
-          <div className="product-price">Rs. {Number(product.retailPrice).toFixed(2)}</div>
+          <div className="product-price">Rs. {Number(price).toFixed(2)}</div>
           <div className="product-description">{product.description}</div>
           <div className="product-rating">
             <StarRating rating={reviews.length > 0 ? reviews[0].rating : 0} />

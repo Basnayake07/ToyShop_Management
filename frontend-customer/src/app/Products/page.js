@@ -7,6 +7,8 @@ import ProductCard from '@/components/ProductCard';
 import { getProductCards, searchProducts, getProductsByCategory } from '@/services/productService';
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { FormControl, InputLabel, Select,InputAdornment, MenuItem } from '@mui/material';
+import SortIcon from '@mui/icons-material/Sort';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -14,6 +16,7 @@ const Products = () => {
   const searchParams = useSearchParams(); // Get query parameters from the URL
   const searchQuery = searchParams.get('search');
   const category = searchParams.get('category');
+  const [sortOption, setSortOption] = useState('default');
 
   useEffect(() => {
     AOS.init({
@@ -63,13 +66,50 @@ const Products = () => {
     setVisibleProducts((prevVisible) => prevVisible + 4); // Show 4 more products
   };
 
+  const sortedProducts = [...products].sort((a, b) => {
+    switch (sortOption) {
+      case 'price_low':
+        return a.price - b.price;
+      case 'price_high':
+        return b.price - a.price;
+      case 'name_asc':
+        return a.name.localeCompare(b.name);
+      case 'name_desc':
+        return b.name.localeCompare(a.name);
+      case 'rating':
+        return b.rating - a.rating;
+      default:
+        return 0;
+    }
+  });
+
   return (
     <div className="Products">
       <Header isHomePage={true} />
       <main className="main-Products-content">
         <div className="Products-content">
+          <FormControl variant="outlined" size="small" className="products-sort" style={{ marginTop: '20px', marginLeft: '50px' }} >
+            <InputLabel>Sort By</InputLabel>
+            <Select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              label="Sort By"
+              startAdornment={
+                <InputAdornment position="start">
+                  <SortIcon />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="default">Default</MenuItem>
+              {/* <MenuItem value="price_low">Price: Low to High</MenuItem>
+              <MenuItem value="price_high">Price: High to Low</MenuItem> */}
+              <MenuItem value="name_asc">Name: A to Z</MenuItem>
+              <MenuItem value="name_desc">Name: Z to A</MenuItem>
+              <MenuItem value="rating">Top Rated</MenuItem>
+            </Select>
+        </FormControl>
           <div className="product-grid">
-            {products.slice(0, visibleProducts).map((product) => (
+            {sortedProducts.slice(0, visibleProducts).map((product) => (
               <ProductCard key={product.productID} product={product} data-aos="fade-up" />
             ))}
           </div>

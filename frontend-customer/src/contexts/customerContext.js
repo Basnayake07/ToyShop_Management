@@ -9,7 +9,8 @@ export const CustomerProvider = ({ children }) => {
 
   useEffect(() => {
     // Retrieve cusType from localStorage on app load
-    const storedCusType = localStorage.getItem('cusType');
+    const storedCusType = sessionStorage.getItem('cusType');
+    console.log("Stored cusType from sessionStorage:", storedCusType);
     if (storedCusType) {
       setCusType(storedCusType);
     }
