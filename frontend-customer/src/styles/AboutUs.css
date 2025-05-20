@@ -1,0 +1,143 @@
+.story{
+    padding-left: 3%;
+    padding-top: 2%;
+}
+
+.story-content{
+    display: flex;
+}
+
+.story-text {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    padding: 3%;
+    text-align: justify; 
+}
+
+.story-image {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    margin-top: -120px;
+}
+
+.vision-mission {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 2%; 
+    gap: 20px; 
+}
+
+.vision, .mission {
+    display: flex;
+    flex: 1; 
+    padding: 20px; 
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+    border-radius: 20px; 
+    background-color: #0a2f6e; 
+    color: #fff;       
+}
+
+.vision div, .mission div {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    margin-top: 10px; 
+}
+
+.vision h2, .mission h2 {
+    margin-bottom: 10px;
+}
+
+.vision p, .mission p {
+    margin-bottom: 20px; 
+    text-align: justify; 
+}
+
+/* Responsive styles for smaller screens */
+@media (max-width: 1024px) {
+    .story-content {
+        flex-direction: column; /* Stack the story text and image vertically */
+        align-items: center;
+    }
+
+    .story-text, .story-image {
+        flex: none; /* Remove flex-grow to prevent uneven spacing */
+        width: 100%; /* Take full width */
+        margin: 0; /* Remove extra margins */
+        padding: 10px; /* Add padding for spacing */
+    }
+
+    .story-image {
+        margin-top: 0; /* Remove negative margin */
+    }
+
+    .vision-mission {
+        flex-direction: column; /* Stack vision and mission vertically */
+        gap: 20px; /* Add spacing between sections */
+    }
+
+    .vision, .mission {
+        width: 100%; /* Take full width */
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+}
+
+/* Responsive styles for very small screens (mobile) */
+@media (max-width: 768px) {
+    .story {
+        padding-left: 2%;
+        padding-top: 1%;
+    }
+
+    .vision, .mission {
+        padding: 10px; /* Reduce padding for smaller screens */
+        font-size: 14px; /* Adjust font size */
+    }
+
+    .vision h2, .mission h2 {
+        font-size: 18px; /* Adjust heading size */
+    }
+
+    .vision p, .mission p {
+        font-size: 14px; /* Adjust paragraph size */
+    }
+
+    .vision div img, .mission div img {
+        width: 150px; /* Adjust image size */
+        height: auto;
+    }
+}
+
+/* Responsive styles for extra small screens (mobile) */
+@media (max-width: 480px) {
+    .story {
+        padding-left: 2%;
+        padding-top: 1%;
+    }
+
+    .story-text p{
+        padding: inherit;
+    }
+
+    .vision, .mission {
+        padding: 8px; /* Further reduce padding */
+        font-size: 12px; /* Adjust font size for smaller screens */
+    }
+
+    .vision h2, .mission h2 {
+        font-size: 16px; /* Adjust heading size */
+    }
+
+    .vision p, .mission p {
+        font-size: 12px; /* Adjust paragraph size */
+    }
+
+    .vision div img, .mission div img {
+        width: 120px; /* Further reduce image size */
+        height: auto;
+    }
+}
