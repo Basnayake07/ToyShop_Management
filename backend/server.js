@@ -12,6 +12,7 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import returnsRoutes from "./routes/returnsRoutes.js"; 
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import discountRoutes from "./routes/discountRoutes.js";
+import reportRoute from './routes/ReportRoutes.js';
 import db from './config/db.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -93,6 +94,9 @@ app.use("/api", dashboardRoutes);
 
 // Register the discount routes
 app.use("/api/discounts", discountRoutes);
+
+// Register the report routes
+app.use('/api/reports', reportRoute);
 
 
 app.listen(8081, () => {
