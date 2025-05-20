@@ -13,13 +13,15 @@ export const getAllProducts = async (req, res) => {
                 p.image, 
                 p.ageGrp, 
                 i.wholesalePrice,
-                i.retailPrice
+                i.retailPrice,
+                p.productRating AS rating,
+                COALESCE(SUM(oi.quantity), 0) AS sold_count
             FROM 
                 product p
             LEFT JOIN 
-                inventory i
-            ON 
-                p.productID = i.productID
+                inventory i ON p.productID = i.productID
+            LEFT JOIN 
+                orderitems oi ON p.productID = oi.productID
         `;
 
         const queryParams = [];
@@ -34,6 +36,20 @@ export const getAllProducts = async (req, res) => {
             query += search ? ` AND p.category = ?` : ` WHERE p.category = ?`;
             queryParams.push(category);
         }
+
+                  // Add GROUP BY for all non-aggregated columns
+          query += `
+              GROUP BY 
+                  p.productID, 
+                  p.name, 
+                  p.category, 
+                  p.description, 
+                  p.image, 
+                  p.ageGrp, 
+                  i.wholesalePrice,
+                  i.retailPrice,
+                  p.productRating
+          `;
 
         const [products] = await req.db.execute(query, queryParams);
         res.status(200).json(products);
@@ -58,10 +74,20 @@ export const getProductDetails = async (req, res) => {
           p.ageGrp AS ageGroup,
           i.wholesalePrice AS wholesalePrice,
           i.retailPrice AS retailPrice,
-          p.image AS image
+          p.productRating AS rating
       FROM product p
       LEFT JOIN inventory i ON p.productID = i.productID
-      WHERE p.productID = ?;
+      WHERE p.productID = ?
+      GROUP BY 
+      p.productID, 
+      p.name, 
+      p.category, 
+      p.description, 
+      p.image, 
+      p.ageGrp, 
+      i.wholesalePrice,
+      i.retailPrice,
+      p.productRating
     `;
 
     const [productRows] = await pool.query(productQuery, [id]);

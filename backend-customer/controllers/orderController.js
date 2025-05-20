@@ -184,3 +184,42 @@ export const updatePaymentStatus = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const getOrdersByCustomer = async (req, res) => {
+  const cusID = req.user.cusID; // Extract cusID from the JWT token
+
+  try {
+    const sql = `
+      SELECT 
+        o.orderID,
+        o.orderDate,
+        o.payStatus,
+        o.deliveryStatus,
+        o.totalPrice,
+        o.paymentMethod,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'productID', oi.productID,
+            'name', p.name,
+            'quantity', oi.quantity,
+            'price', oi.price,
+            'discountPrice', oi.discountPrice,
+            'image', p.image
+          )
+        ) AS products
+      FROM orders o
+      JOIN orderitems oi ON o.orderID = oi.orderID
+      JOIN product p ON oi.productID = p.productID
+      WHERE o.cusID = ?
+      GROUP BY o.orderID
+      ORDER BY o.orderDate DESC
+    `;
+
+    const [orders] = await pool.query(sql, [cusID]);
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error.message);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+};

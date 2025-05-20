@@ -7,6 +7,7 @@ import wishListsRoutes from './routes/wishListsRouter.js';
 import customerRoutes from './routes/customerRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import customerReviewRoutes from './routes/reviewRoutes.js';
 import db from './config/db.js'; 
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -73,6 +74,9 @@ app.use('/api/order', orderRoutes);
 
 // payment route
 app.use('/api/payment', paymentRoutes);
+
+// review route 
+app.use('/api/review', customerReviewRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8082;
