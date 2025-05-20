@@ -139,3 +139,97 @@ export const getProductDetails = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch product details' });
   }
 };
+
+// Search products by name or description
+export const searchProducts = async (req, res) => {
+  const { search } = req.query;
+  try {
+    const query = `
+      SELECT 
+        p.productID, 
+        p.name, 
+        p.category, 
+        p.description, 
+        p.image, 
+        p.ageGrp,
+        p.productRating, 
+        i.quantity, 
+        i.wholesalePrice,
+        i.retailPrice,
+        i.minStock
+      FROM 
+        product p
+      JOIN (
+        SELECT 
+          inv.productID,
+          inv.quantity,
+          inv.wholesalePrice,
+          inv.retailPrice,
+          inv.minStock
+        FROM inventory inv
+        JOIN (
+          SELECT 
+            productID,
+            MIN(receivedDate) AS firstDate
+          FROM inventory
+          WHERE quantity > 0
+          GROUP BY productID
+        ) first_batches ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
+        WHERE inv.quantity > 0
+      ) i ON p.productID = i.productID
+      WHERE p.name LIKE ? OR p.description LIKE ?
+    `;
+    const [products] = await pool.query(query, [`%${search}%`, `%${search}%`]);
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error searching products:", error);
+    res.status(500).json({ message: "Error searching products", error });
+  }
+};
+
+// Get products by category
+export const getProductsByCategory = async (req, res) => {
+  const { category } = req.query;
+  try {
+    const query = `
+      SELECT 
+        p.productID, 
+        p.name, 
+        p.category, 
+        p.description, 
+        p.image, 
+        p.ageGrp,
+        p.productRating, 
+        i.quantity, 
+        i.wholesalePrice,
+        i.retailPrice,
+        i.minStock
+      FROM 
+        product p
+      JOIN (
+        SELECT 
+          inv.productID,
+          inv.quantity,
+          inv.wholesalePrice,
+          inv.retailPrice,
+          inv.minStock
+        FROM inventory inv
+        JOIN (
+          SELECT 
+            productID,
+            MIN(receivedDate) AS firstDate
+          FROM inventory
+          WHERE quantity > 0
+          GROUP BY productID
+        ) first_batches ON inv.productID = first_batches.productID AND inv.receivedDate = first_batches.firstDate
+        WHERE inv.quantity > 0
+      ) i ON p.productID = i.productID
+      WHERE p.category = ?
+    `;
+    const [products] = await pool.query(query, [category]);
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    res.status(500).json({ message: "Error fetching products by category", error });
+  }
+};
